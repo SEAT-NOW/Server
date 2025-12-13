@@ -7,6 +7,7 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum ErrorCode {
     INVALID_REQUEST("4000", "잘못된 요청입니다."),
+    INVALID_BUSINESS_NUMBER("4001", "유효하지 않은 사업자번호입니다."),
     UNAUTHORIZED("4010", "인증이 필요합니다."),
     FORBIDDEN("4030", "접근 권한이 없습니다."),
     NOT_FOUND("4040", "리소스를 찾을 수 없습니다."),

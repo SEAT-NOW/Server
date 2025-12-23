@@ -13,9 +13,9 @@ public class NtsBusinessResponse {
     @Getter
     @Setter
     public static class NtsItem {
-        private String b_no;
-        private String b_stt;
-        private String b_stt_cd;
-        private String tax_type;
+        private String b_no; // 사업자 등록번호
+        private String b_stt; // 사업자 상태(텍스트)
+        private String b_stt_cd; // 사업자 상태 코드 01 : 계속, 02 : 휴업, 03 : 폐업
+        private String tax_type; // 과세 유형
     }
 }

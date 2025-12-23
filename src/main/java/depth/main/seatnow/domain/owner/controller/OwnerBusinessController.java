@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/owner/business")
+@RequestMapping("/api/v1/owner/business")
 @RequiredArgsConstructor
 public class OwnerBusinessController {
     private final OwnerBusinessService ownerBusinessService;

@@ -1,4 +1,4 @@
-package depth.main.seatnow.domain.owner.service;
+package depth.main.seatnow.domain.auth.service;
 
 import depth.main.seatnow.global.exception.custom.BadRequestException;
 import depth.main.seatnow.global.exception.custom.InternalServerException;
@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class OwnerBusinessService {
+public class BusinessVerificationService {
     private final NtsBusinessClient ntsBusinessClient;
 
     public boolean verifyBusinessNumber(String businessNumber) {

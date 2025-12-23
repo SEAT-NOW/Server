@@ -1,7 +1,7 @@
-package depth.main.seatnow.domain.owner.controller;
+package depth.main.seatnow.domain.auth.controller;
 
-import depth.main.seatnow.domain.owner.dto.request.VerifyBusinessNumberRequest;
-import depth.main.seatnow.domain.owner.service.OwnerBusinessService;
+import depth.main.seatnow.domain.auth.dto.request.VerifyBusinessNumberRequest;
+import depth.main.seatnow.domain.auth.service.BusinessVerificationService;
 import depth.main.seatnow.global.common.ApiResponse;
 import depth.main.seatnow.global.exception.error.ErrorResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -16,12 +16,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-@Tag(name = "Owner Business", description = "점주 사업자 관리 API")
+@Tag(name = "Verification", description = "각종 인증(이메일, SMS, 사업자) API")
 @RestController
-@RequestMapping("/api/v1/owner/business")
+@RequestMapping("/api/v1/auth/verify")
 @RequiredArgsConstructor
-public class OwnerBusinessController {
-    private final OwnerBusinessService ownerBusinessService;
+public class VerificationController {
+    private final BusinessVerificationService ownerBusinessService;
     @Operation(
             summary = "사업자 등록번호 유효성 인증",
             description = "국세청 데이터를 기반으로 사업자 번호의 유효 여부를 확인합니다."
@@ -64,7 +64,7 @@ public class OwnerBusinessController {
                             ))
             )
     })
-    @PostMapping("/verify")
+    @PostMapping("/business")
     public ApiResponse<Boolean> verify(@RequestBody VerifyBusinessNumberRequest request) {
         boolean result = ownerBusinessService.verifyBusinessNumber(request.getBusinessNumber());
         return ApiResponse.ok(result, "사업자 등록번호가 유효하게 확인되었습니다.");

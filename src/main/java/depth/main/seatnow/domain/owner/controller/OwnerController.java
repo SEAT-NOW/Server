@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import depth.main.seatnow.domain.owner.service.EmailVerificationService;
+import depth.main.seatnow.domain.auth.service.EmailVerificationService;
 @RestController
 @RequestMapping("/api/owner")
 @RequiredArgsConstructor

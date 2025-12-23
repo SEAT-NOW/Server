@@ -74,13 +74,44 @@ public class VerificationController {
 
     @Operation(summary = "이메일 인증 코드 발송", description = "입력한 이메일로 6자리 인증 번호를 전송합니다.")
     @ApiResponses(value = {
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "코드 발송 성공"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "잘못된 이메일 형식")
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "200",
+                    description = "코드 발송 성공",
+                    content = @Content(schema = @Schema(implementation = ApiResponse.class),
+                            examples = @ExampleObject(value = "{\"success\": true, \"data\": true, \"message\": \"인증 코드가 이메일로 발송되었습니다.\"}"))
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "400",
+                    description = "잘못된 요청 (형식 오류 또는 중복 이메일)",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class),
+                            examples = {
+                                    @ExampleObject(
+                                            name = "잘못된 이메일 형식",
+                                            summary = "INVALID_REQUEST",
+                                            value = "{\"code\": \"4000\", \"message\": \"유효한 이메일 형식이 아닙니다.\"}"
+                                    ),
+                                    @ExampleObject(
+                                            name = "이미 가입된 이메일",
+                                            summary = "CONFLICT",
+                                            value = "{\"code\": \"4090\", \"message\": \"이미 존재하는 리소스입니다.\", \"detail\": \"해당 이메일로 가입된 계정이 이미 존재합니다.\"}"
+                                    )
+                            })
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "500",
+                    description = "메일 서버 오류",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    name = "메일 발송 실패",
+                                    summary = "EXTERNAL_API_ERROR",
+                                    value = "{\"code\": \"5001\", \"message\": \"외부 시스템과의 통신 중 오류가 발생했습니다.\", \"detail\": \"메일 발송 서버와의 연결에 실패했습니다.\"}"
+                            ))
+            )
     })
     @PostMapping("/email/send")
-    public ApiResponse<String> sendVerificationCode(@Valid @RequestBody EmailSendRequest request) {
+    public ApiResponse<Boolean> sendVerificationCode(@Valid @RequestBody EmailSendRequest request) {
         emailVerificationService.sendVerificationCode(request.getEmail());
-        return ApiResponse.ok("인증 코드가 이메일로 발송되었습니다.");
+        return ApiResponse.ok(true,"인증 코드가 이메일로 발송되었습니다.");
     }
 
     @Operation(summary = "이메일 인증 코드 확인", description = "사용자가 입력한 코드의 유효성을 검증합니다.")

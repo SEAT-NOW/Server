@@ -1,0 +1,50 @@
+spring:
+  profiles:
+    include: secret # application-secret.yml을 불러옴
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
+  # JPA 및 기타 공통 설정들
+  jpa:
+    hibernate:
+      ddl-auto: update # 애플리케이션 실행 시 Entity 변경 사항을 DB에 자동 반영
+    show-sql: true # 실행되는 SQL 쿼리를 로그로 출력(디버깅용)
+    properties:
+      hibernate:
+        format_sql: true # SQL 쿼리를 보기 좋게 정렬
+
+springdoc:
+  swagger-ui:
+    # "사용해 보기" 섹션이 기본적으로 활성화 되어야 하는지 여부를 제어
+    try-it-out-enabled: true
+    # filter 검색
+    filter: true
+    operations-sorter: method
+    # ms 단위 표시
+    display-request-duration: true
+    supported-submit-methods: GET, POST, PUT, DELETE, OPTIONS, HEAD, PATCH, TRACE
+    tags-sorter: alpha
+
+
+email:
+  host: smtp.gmail.com
+  port: 587
+  verification:
+    expiry-time: 10 # 인증 코드 만료 시간 (분 단위)
+
+coolsms:
+  sms:
+    apiUrl: https://api.coolsms.co.kr
+    verification:
+      expiry-time: 5 # 인증 코드 유효 시간 (분 단위)
+
+kakao:
+  local:
+    base-url: https://dapi.kakao.com
+
+google:
+  places:
+    base-url: https://maps.googleapis.com

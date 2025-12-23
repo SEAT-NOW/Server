@@ -1,7 +1,10 @@
 package depth.main.seatnow.domain.auth.controller;
 
+import depth.main.seatnow.domain.auth.dto.request.EmailSendRequest;
+import depth.main.seatnow.domain.auth.dto.request.EmailVerifyRequest;
 import depth.main.seatnow.domain.auth.dto.request.VerifyBusinessNumberRequest;
 import depth.main.seatnow.domain.auth.service.BusinessVerificationService;
+import depth.main.seatnow.domain.auth.service.EmailVerificationService;
 import depth.main.seatnow.global.common.ApiResponse;
 import depth.main.seatnow.global.exception.error.ErrorResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -10,11 +13,9 @@ import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "Verification", description = "각종 인증(이메일, SMS, 사업자) API")
 @RestController
@@ -22,6 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class VerificationController {
     private final BusinessVerificationService ownerBusinessService;
+    private final EmailVerificationService emailVerificationService;
     @Operation(
             summary = "사업자 등록번호 유효성 인증",
             description = "국세청 데이터를 기반으로 사업자 번호의 유효 여부를 확인합니다."
@@ -68,5 +70,48 @@ public class VerificationController {
     public ApiResponse<Boolean> verify(@RequestBody VerifyBusinessNumberRequest request) {
         boolean result = ownerBusinessService.verifyBusinessNumber(request.getBusinessNumber());
         return ApiResponse.ok(result, "사업자 등록번호가 유효하게 확인되었습니다.");
+    }
+
+    @Operation(summary = "이메일 인증 코드 발송", description = "입력한 이메일로 6자리 인증 번호를 전송합니다.")
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "코드 발송 성공"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "잘못된 이메일 형식")
+    })
+    @PostMapping("/email/send")
+    public ApiResponse<String> sendVerificationCode(@Valid @RequestBody EmailSendRequest request) {
+        emailVerificationService.sendVerificationCode(request.getEmail());
+        return ApiResponse.ok("인증 코드가 이메일로 발송되었습니다.");
+    }
+
+    @Operation(summary = "이메일 인증 코드 확인", description = "사용자가 입력한 코드의 유효성을 검증합니다.")
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "200",
+                    description = "인증 성공",
+                    content = @Content(schema = @Schema(implementation = ApiResponse.class),
+                            examples = @ExampleObject(value = "{\"success\": true, \"data\": true, \"message\": \"인증에 성공하였습니다.\"}"))
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "400",
+                    description = "인증 실패 (번호 불일치 또는 시간 초과)",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class),
+                            examples = {
+                                    @ExampleObject(
+                                            name = "인증번호 불일치",
+                                            summary = "INVALID_VERIFICATION_CODE",
+                                            value = "{\"code\": \"4002\", \"message\": \"인증 번호가 일치하지 않습니다.\"}"
+                                    ),
+                                    @ExampleObject(
+                                            name = "인증 시간 만료",
+                                            summary = "EXPIRED_VERIFICATION_CODE",
+                                            value = "{\"code\": \"4003\", \"message\": \"인증 시간이 만료되었습니다. 다시 시도해주세요.\"}"
+                                    )
+                            })
+            )
+    })
+    @PostMapping("/email/confirm")
+    public ApiResponse<Boolean> verifyCode(@RequestBody EmailVerifyRequest request) {
+        emailVerificationService.verifyCode(request.getEmail(), request.getCode());
+        return ApiResponse.ok(true, "인증에 성공하였습니다.");
     }
 }

@@ -20,6 +20,14 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
+      - name: Create application-secret.yml
+        run: |
+          mkdir -p ./src/main/resources
+          # 따옴표로 감싸지 말고 'EOF' 방식을 쓰면 줄바꿈이 완벽하게 보존됨
+          cat <<EOF > ./src/main/resources/application-secret.yml
+          ${{ secrets.APPLICATION_SECRET_YML }}
+          EOF
+
       - name: Build with Gradle
         run: ./gradlew clean build -x test
 

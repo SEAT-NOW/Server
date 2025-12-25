@@ -6,6 +6,7 @@ import lombok.Getter;
 
 @Getter
 @Builder
+@Schema(description = "장소 검색 결과 정보")
 public class PlaceSearchItemResponse {
     @Schema(description = "장소명 (상호명)", example = "시트나우 카페")
     private String name;

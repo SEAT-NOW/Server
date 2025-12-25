@@ -1,4 +1,4 @@
-package depth.main.seatnow.domain.owner.service;
+package depth.main.seatnow.domain.auth.service;
 
 import depth.main.seatnow.global.exception.custom.BadRequestException;
 import depth.main.seatnow.global.exception.custom.InternalServerException;
@@ -10,10 +10,10 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class OwnerBusinessService {
+public class BusinessVerificationService {
     private final NtsBusinessClient ntsBusinessClient;
 
-    public boolean verifyBusinessNumber(String businessNumber) {
+    public void verifyBusinessNumber(String businessNumber) {
 
         NtsBusinessResponse res = ntsBusinessClient.validateBusinessNumber(businessNumber);
 
@@ -35,6 +35,5 @@ public class OwnerBusinessService {
             throw new BadRequestException(ErrorCode.INVALID_BUSINESS_NUMBER, "현재 " + statusName + " 상태입니다. 계속사업자만 등록 가능합니다.");
         }
 
-        return true;
     }
 }

@@ -7,6 +7,7 @@ import jakarta.validation.constraints.Size;
 import lombok.Getter;
 
 @Getter
+@Schema(description = "이메일 인증 요청 객체")
 public class EmailVerifyRequest {
     @Schema(description = "인증을 진행할 이메일 주소", example = "owner@example.com")
     @NotBlank(message = "이메일은 필수 입력 항목입니다.")

@@ -35,7 +35,7 @@ public class PlaceSearchController {
         return ApiResponse.ok(items);
     }
 
-    @GetMapping("/university-candidates")
+    @GetMapping("/universities")
     public ApiResponse<List<String>> getCandidates(
             @RequestParam @NotNull Double lat,
             @RequestParam @NotNull Double lng

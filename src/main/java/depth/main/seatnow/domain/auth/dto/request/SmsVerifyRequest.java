@@ -6,6 +6,7 @@ import jakarta.validation.constraints.Size;
 import lombok.Getter;
 
 @Getter
+@Schema(description = "이메일 인증 확인 요청 객체")
 public class SmsVerifyRequest {
     @Schema(description = "인증을 진행할 휴대폰 번호", example = "01012345678")
     @NotBlank(message = "휴대폰 번호는 필수 입력 항목입니다.")

@@ -1,5 +1,7 @@
-package depth.main.seatnow.domain.owner.service;
+package depth.main.seatnow.domain.auth.service;
 
+import depth.main.seatnow.global.exception.custom.InternalServerException;
+import depth.main.seatnow.global.exception.error.ErrorCode;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -39,20 +41,24 @@ public class CoolSmsService {
         Message message = new Message();
         message.setFrom(SENDER_PHONE_NUMBER); // 발신자 번호
         message.setTo(phoneNumber); // 수신자 번호
-        message.setText("귀하의 인증 코드는 " + verificationCode + "입니다.");
+        message.setSubject("SeatNow 인증번호");
+        message.setText("[SeatNow] 인증번호는 [" + verificationCode + "] 입니다. 3분 이내에 입력해주세요.");
 
         try {
             // CoolSMS API를 사용하여 메시지 발송
-            SingleMessageSentResponse response = this.messageService.sendOne(new SingleMessageSendingRequest(message));
+            SingleMessageSentResponse response = messageService.sendOne(new SingleMessageSendingRequest(message));
 
             // 응답 결과 확인
-            if (response != null && response.getStatusCode() != null && response.getStatusCode().equals("200")) {
-                log.info("SMS 전송 성공: " + response.getStatusMessage());
-            } else {
-                log.error("SMS 전송 실패: " + (response != null ? response.getStatusMessage() : "No response"));
+            if (response == null || !"2000".equals(response.getStatusCode())) {
+                String errorMsg = (response != null) ? response.getStatusMessage() : "응답 객체 없음";
+                log.error("SMS 발송 실패: {}", errorMsg);
+                throw new InternalServerException(ErrorCode.EXTERNAL_API_ERROR);
             }
+
         } catch (Exception e) {
-            log.error("SMS 전송 중 오류 발생: " + e.getMessage(), e);
+            log.error("SMS 전송 중 예기치 못한 오류 발생: {}", e.getMessage());
+            throw new InternalServerException(ErrorCode.EXTERNAL_API_ERROR);
         }
+
     }
 }

@@ -1,5 +1,7 @@
-package depth.main.seatnow.domain.owner.service;
+package depth.main.seatnow.domain.auth.service;
 
+import depth.main.seatnow.global.exception.custom.BadRequestException;
+import depth.main.seatnow.global.exception.error.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -12,7 +14,7 @@ import java.util.concurrent.TimeUnit;
 @RequiredArgsConstructor
 public class SmsVerificationService {
     private final StringRedisTemplate redisTemplate;
-    private final CoolSmsService coolSmsService;
+    private final depth.main.seatnow.domain.auth.service.CoolSmsService coolSmsService;
 
     @Value("${coolsms.sms.verification.expiry-time}")
     private long expiryTimeInMinutes;  // 인증 코드 유효 시간 (분 단위)
@@ -36,8 +38,17 @@ public class SmsVerificationService {
     }
 
     // SMS 인증 코드 확인
-    public boolean verifyCode(String phoneNumber, String code) {
+    public void verifyCode(String phoneNumber, String code) {
         String storedCode = redisTemplate.opsForValue().get("sms_verification:" + phoneNumber);
-        return storedCode != null && storedCode.equals(code);
+        if (storedCode == null) {
+            throw new BadRequestException(ErrorCode.EXPIRED_VERIFICATION_CODE);
+        }
+
+        if (!storedCode.equals(code)) {
+            throw new BadRequestException(ErrorCode.INVALID_VERIFICATION_CODE);
+        }
+
+        // 인증 성공 시 삭제
+        redisTemplate.delete("sms_verification:" + phoneNumber);
     }
 }

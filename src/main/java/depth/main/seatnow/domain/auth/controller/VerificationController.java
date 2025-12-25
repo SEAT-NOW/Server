@@ -1,8 +1,6 @@
 package depth.main.seatnow.domain.auth.controller;
 
-import depth.main.seatnow.domain.auth.dto.request.EmailSendRequest;
-import depth.main.seatnow.domain.auth.dto.request.EmailVerifyRequest;
-import depth.main.seatnow.domain.auth.dto.request.VerifyBusinessNumberRequest;
+import depth.main.seatnow.domain.auth.dto.request.*;
 import depth.main.seatnow.domain.auth.service.BusinessVerificationService;
 import depth.main.seatnow.domain.auth.service.EmailVerificationService;
 import depth.main.seatnow.global.common.ApiResponse;
@@ -24,6 +22,7 @@ import org.springframework.web.bind.annotation.*;
 public class VerificationController {
     private final BusinessVerificationService ownerBusinessService;
     private final EmailVerificationService emailVerificationService;
+    private final depth.main.seatnow.domain.auth.service.SmsVerificationService smsVerificationService;
     @Operation(
             summary = "사업자 등록번호 유효성 인증",
             description = "국세청 데이터를 기반으로 사업자 번호의 유효 여부를 확인합니다."
@@ -143,6 +142,19 @@ public class VerificationController {
     @PostMapping("/email/confirm")
     public ApiResponse<Boolean> verifyCode(@RequestBody EmailVerifyRequest request) {
         emailVerificationService.verifyCode(request.getEmail(), request.getCode());
+        return ApiResponse.ok(true, "인증에 성공하였습니다.");
+    }
+
+    @PostMapping("/sms/send")
+    public ApiResponse<Boolean> sendSmsVerificationCode(@Valid @RequestBody SmsSendRequest request) {
+        smsVerificationService.sendVerificationCode(request.getPhoneNumber()); // 인증 코드 발송
+        return ApiResponse.ok(true,"인증 코드가 SMS로 발송되었습니다.");
+    }
+
+    // SMS 인증 코드 확인 요청
+    @PostMapping("/sms/confirm")
+    public ApiResponse<Boolean> verifySmsCode(@Valid @RequestBody SmsVerifyRequest request) {
+        smsVerificationService.verifyCode(request.getPhoneNumber(), request.getCode()); // 인증 코드 검증
         return ApiResponse.ok(true, "인증에 성공하였습니다.");
     }
 }

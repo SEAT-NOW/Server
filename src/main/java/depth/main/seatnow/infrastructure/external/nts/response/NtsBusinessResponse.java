@@ -1,8 +1,6 @@
-package depth.main.seatnow.infrastructure.external.nts;
+package depth.main.seatnow.infrastructure.external.nts.response;
 
 import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
 
 import java.util.List;
 
@@ -10,8 +8,7 @@ import java.util.List;
 public class NtsBusinessResponse {
     private List<NtsItem> data;
 
-    @Getter
-    @Setter
+    @Data
     public static class NtsItem {
         private String b_no; // 사업자 등록번호
         private String b_stt; // 사업자 상태(텍스트)

@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "Verification", description = "각종 인증(이메일, SMS, 사업자) API")
 @RestController
-@RequestMapping("/api/v1/auth/verify")
+@RequestMapping("/api/v1/auth/verifications")
 @RequiredArgsConstructor
 public class VerificationController {
     private final BusinessVerificationService ownerBusinessService;
@@ -65,7 +65,7 @@ public class VerificationController {
                             ))
             )
     })
-    @PostMapping("/business")
+    @PostMapping("/business-number")
     public ApiResponse<Boolean> verify(@RequestBody VerifyBusinessNumberRequest request) {
         ownerBusinessService.verifyBusinessNumber(request.getBusinessNumber());
         return ApiResponse.ok(true, "사업자 등록번호가 유효하게 확인되었습니다.");
@@ -107,7 +107,7 @@ public class VerificationController {
                             ))
             )
     })
-    @PostMapping("/email/send")
+    @PostMapping("/email")
     public ApiResponse<Boolean> sendVerificationCode(@Valid @RequestBody EmailSendRequest request) {
         emailVerificationService.sendVerificationCode(request.getEmail());
         return ApiResponse.ok(true,"인증 코드가 이메일로 발송되었습니다.");
@@ -145,7 +145,7 @@ public class VerificationController {
         return ApiResponse.ok(true, "인증에 성공하였습니다.");
     }
 
-    @PostMapping("/sms/send")
+    @PostMapping("/sms")
     public ApiResponse<Boolean> sendSmsVerificationCode(@Valid @RequestBody SmsSendRequest request) {
         smsVerificationService.sendVerificationCode(request.getPhoneNumber()); // 인증 코드 발송
         return ApiResponse.ok(true,"인증 코드가 SMS로 발송되었습니다.");

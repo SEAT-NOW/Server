@@ -144,17 +144,70 @@ public class VerificationController {
         emailVerificationService.verifyCode(request.getEmail(), request.getCode());
         return ApiResponse.ok(true, "인증에 성공하였습니다.");
     }
-
+    @Operation(summary = "SMS 인증 코드 발송", description = "입력한 번호로 6자리 SMS 인증 번호를 전송합니다.")
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "200",
+                    description = "코드 발송 성공",
+                    content = @Content(schema = @Schema(implementation = ApiResponse.class),
+                            examples = @ExampleObject(value = "{\"success\": true, \"data\": true, \"message\": \"인증 코드가 SMS로 발송되었습니다.\"}"))
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "400",
+                    description = "잘못된 요청 (형식 오류)",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    name = "잘못된 번호 형식",
+                                    summary = "INVALID_REQUEST",
+                                    value = "{\"code\": \"4000\", \"message\": \"올바른 휴대폰 번호 형식이 아닙니다.\"}"
+                            ))
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "500",
+                    description = "SMS 서버 오류",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    name = "문자 발송 실패",
+                                    summary = "EXTERNAL_API_ERROR",
+                                    value = "{\"code\": \"5001\", \"message\": \"외부 시스템과의 통신 중 오류가 발생했습니다.\", \"detail\": \"CoolSMS API 호출에 실패했습니다.\"}"
+                            ))
+            )
+    })
     @PostMapping("/sms")
     public ApiResponse<Boolean> sendSmsVerificationCode(@Valid @RequestBody SmsSendRequest request) {
         smsVerificationService.sendVerificationCode(request.getPhoneNumber()); // 인증 코드 발송
         return ApiResponse.ok(true,"인증 코드가 SMS로 발송되었습니다.");
     }
 
-    // SMS 인증 코드 확인 요청
+    @Operation(summary = "SMS 인증 코드 확인", description = "사용자가 입력한 SMS 코드를 검증합니다.")
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "200",
+                    description = "인증 성공",
+                    content = @Content(schema = @Schema(implementation = ApiResponse.class),
+                            examples = @ExampleObject(value = "{\"success\": true, \"data\": true, \"message\": \"인증에 성공하였습니다.\"}"))
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "400",
+                    description = "인증 실패 (번호 불일치 또는 시간 초과)",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class),
+                            examples = {
+                                    @ExampleObject(
+                                            name = "인증번호 불일치",
+                                            summary = "INVALID_VERIFICATION_CODE",
+                                            value = "{\"code\": \"4002\", \"message\": \"인증 번호가 일치하지 않습니다.\"}"
+                                    ),
+                                    @ExampleObject(
+                                            name = "인증 시간 만료",
+                                            summary = "EXPIRED_VERIFICATION_CODE",
+                                            value = "{\"code\": \"4003\", \"message\": \"인증 시간이 만료되었습니다. 다시 시도해주세요.\"}"
+                                    )
+                            })
+            )
+    })
     @PostMapping("/sms/confirm")
     public ApiResponse<Boolean> verifySmsCode(@Valid @RequestBody SmsVerifyRequest request) {
-        smsVerificationService.verifyCode(request.getPhoneNumber(), request.getCode()); // 인증 코드 검증
+        smsVerificationService.verifyCode(request.getPhoneNumber(), request.getCode());
         return ApiResponse.ok(true, "인증에 성공하였습니다.");
     }
 }

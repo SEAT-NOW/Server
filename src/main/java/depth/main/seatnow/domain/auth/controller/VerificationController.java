@@ -68,8 +68,8 @@ public class VerificationController {
     })
     @PostMapping("/business")
     public ApiResponse<Boolean> verify(@RequestBody VerifyBusinessNumberRequest request) {
-        boolean result = ownerBusinessService.verifyBusinessNumber(request.getBusinessNumber());
-        return ApiResponse.ok(result, "사업자 등록번호가 유효하게 확인되었습니다.");
+        ownerBusinessService.verifyBusinessNumber(request.getBusinessNumber());
+        return ApiResponse.ok(true, "사업자 등록번호가 유효하게 확인되었습니다.");
     }
 
     @Operation(summary = "이메일 인증 코드 발송", description = "입력한 이메일로 6자리 인증 번호를 전송합니다.")

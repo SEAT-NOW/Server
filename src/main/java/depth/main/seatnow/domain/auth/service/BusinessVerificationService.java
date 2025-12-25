@@ -13,7 +13,7 @@ import org.springframework.stereotype.Service;
 public class BusinessVerificationService {
     private final NtsBusinessClient ntsBusinessClient;
 
-    public boolean verifyBusinessNumber(String businessNumber) {
+    public void verifyBusinessNumber(String businessNumber) {
 
         NtsBusinessResponse res = ntsBusinessClient.validateBusinessNumber(businessNumber);
 
@@ -35,6 +35,5 @@ public class BusinessVerificationService {
             throw new BadRequestException(ErrorCode.INVALID_BUSINESS_NUMBER, "현재 " + statusName + " 상태입니다. 계속사업자만 등록 가능합니다.");
         }
 
-        return true;
     }
 }

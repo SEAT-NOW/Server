@@ -4,7 +4,7 @@ import depth.main.seatnow.global.exception.custom.BadRequestException;
 import depth.main.seatnow.global.exception.custom.InternalServerException;
 import depth.main.seatnow.global.exception.error.ErrorCode;
 import depth.main.seatnow.infrastructure.external.nts.NtsBusinessClient;
-import depth.main.seatnow.infrastructure.external.nts.NtsBusinessResponse;
+import depth.main.seatnow.infrastructure.external.nts.response.NtsBusinessResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

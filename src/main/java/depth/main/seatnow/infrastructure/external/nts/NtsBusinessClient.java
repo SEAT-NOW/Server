@@ -1,5 +1,6 @@
 package depth.main.seatnow.infrastructure.external.nts;
 
+import depth.main.seatnow.infrastructure.external.nts.response.NtsBusinessResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;

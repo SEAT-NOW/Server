@@ -1,5 +1,8 @@
-package depth.main.seatnow.domain.owner.service;
+package depth.main.seatnow.domain.auth.service;
 
+import depth.main.seatnow.global.exception.custom.BadRequestException;
+import depth.main.seatnow.global.exception.custom.CustomException;
+import depth.main.seatnow.global.exception.error.ErrorCode;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.mail.SimpleMailMessage;
@@ -49,8 +52,19 @@ public class EmailVerificationService {
     }
 
     // 이메일 인증 코드 확인
-    public boolean verifyCode(String email, String code) {
+    public void verifyCode(String email, String code) {
         String storedCode = redisTemplate.opsForValue().get("email_verification:" + email);
-        return storedCode != null && storedCode.equals(code);
+        // 1. 만료되었거나 코드가 존재하지 않는 경우
+        if (storedCode == null) {
+            throw new BadRequestException(ErrorCode.EXPIRED_VERIFICATION_CODE);
+        }
+
+        // 2. 코드가 일치하지 않는 경우
+        if (!storedCode.equals(code)) {
+            throw new BadRequestException(ErrorCode.INVALID_VERIFICATION_CODE);
+        }
+
+        // 인증 성공 시 Redis에서 삭제 (선택 사항: 1회용 인증일 경우)
+        redisTemplate.delete("email_verification:" + email);
     }
 }

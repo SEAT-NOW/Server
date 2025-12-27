@@ -9,5 +9,6 @@ public class AuthResponseDto {
     @Builder
     public static class TokenDto {
         private String accessToken;
+        private String refreshToken;
     }
 }

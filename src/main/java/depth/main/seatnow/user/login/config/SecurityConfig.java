@@ -1,4 +1,4 @@
-package depth.main.seatnow.user.login;
+package depth.main.seatnow.user.login.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

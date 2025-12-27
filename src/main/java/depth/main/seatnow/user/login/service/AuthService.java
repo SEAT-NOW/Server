@@ -1,5 +1,8 @@
 package depth.main.seatnow.user.login.service;
 
+import depth.main.seatnow.global.exception.custom.NotFoundException;
+import depth.main.seatnow.global.exception.custom.UnauthorizedException;
+import depth.main.seatnow.global.exception.error.ErrorCode;
 import depth.main.seatnow.user.login.dto.KakaoDTO;
 import depth.main.seatnow.user.login.dto.AuthResponseDto;
 import depth.main.seatnow.user.login.entity.User;
@@ -50,9 +53,31 @@ public class AuthService {
 
         //jwt 토큰 만들기(자체 토큰)
         String accessToken = jwtUtil.createAccessToken(String.valueOf(user.getSocialId()), user.getRole().toString());
+        String refreshToken = jwtUtil.createRefreshToken(String.valueOf(user.getSocialId()));
 
         return AuthResponseDto.TokenDto.builder()
                 .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .build();
+    }
+
+    //토큰 재발급(access,refresh 토큰 둘다 재발급)
+    @Transactional
+    public AuthResponseDto.TokenDto reissue(String refreshToken) {
+        if (!jwtUtil.validateToken(refreshToken)) {
+            throw new UnauthorizedException(ErrorCode.INVALID_TOKEN);
+        }
+
+        String socialId = jwtUtil.getSocialId(refreshToken);
+        User user = userRepository.findBySocialId(Long.parseLong(socialId))
+                .orElseThrow(() -> new NotFoundException(ErrorCode.NOT_FOUND));
+
+        String newAccessToken = jwtUtil.createAccessToken(String.valueOf(user.getSocialId()), user.getRole().toString());
+        String newRefreshToken = jwtUtil.createRefreshToken(String.valueOf(user.getSocialId()));
+
+        return AuthResponseDto.TokenDto.builder()
+                .accessToken(newAccessToken)
+                .refreshToken(newRefreshToken)
                 .build();
     }
 

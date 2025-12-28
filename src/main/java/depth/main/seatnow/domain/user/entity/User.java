@@ -17,9 +17,15 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Long socialId;
+    private Long socialId; // 카카오용
 
-    private String nickname;
+    private String nickname; // 카카오용
+
+    private String email; // 사장님용
+
+    private String password; // 사장님용
+
+    private String phoneNumber; // 사장님용
 
     @Enumerated(EnumType.STRING)
     private Role role;

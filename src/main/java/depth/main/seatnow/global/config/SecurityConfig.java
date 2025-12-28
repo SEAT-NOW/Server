@@ -18,7 +18,8 @@ public class SecurityConfig {
             "/auth/**",
             "/login/**",
             "/api/v1/auth/verifications/**",
-            "/api/v1/places/**"
+            "/api/v1/places/**",
+            "/api/v1/images/upload"
     };
 
     @Bean

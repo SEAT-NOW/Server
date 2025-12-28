@@ -1,16 +1,16 @@
-package depth.main.seatnow.user.login.service;
+package depth.main.seatnow.domain.auth.service;
 
 import depth.main.seatnow.global.exception.custom.NotFoundException;
 import depth.main.seatnow.global.exception.custom.UnauthorizedException;
 import depth.main.seatnow.global.exception.error.ErrorCode;
-import depth.main.seatnow.user.login.dto.KakaoDTO;
-import depth.main.seatnow.user.login.dto.AuthResponseDto;
-import depth.main.seatnow.user.login.entity.User;
-import depth.main.seatnow.user.login.entity.enums.Role;
-import depth.main.seatnow.user.login.infrastructure.KakaoAuthClient;
-import depth.main.seatnow.user.login.infrastructure.KakaoUserClient;
-import depth.main.seatnow.user.login.repository.UserRepository;
-import depth.main.seatnow.user.login.util.JwtUtil;
+import depth.main.seatnow.domain.auth.dto.response.KakaoDTO;
+import depth.main.seatnow.domain.auth.dto.response.AuthResponseDto;
+import depth.main.seatnow.domain.user.entity.User;
+import depth.main.seatnow.domain.user.entity.enums.Role;
+import depth.main.seatnow.infrastructure.external.kakao.KakaoAuthClient;
+import depth.main.seatnow.infrastructure.external.kakao.KakaoUserClient;
+import depth.main.seatnow.domain.user.repository.UserRepository;
+import depth.main.seatnow.global.util.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -26,10 +26,10 @@ public class AuthService {
     private final UserRepository userRepository;
     private final JwtUtil jwtUtil;
 
-    @Value("${spring.kakao.auth.client}")
+    @Value("${kakao.auth.client}")
     private String clientId;
 
-    @Value("${spring.kakao.auth.redirect}")
+    @Value("${kakao.auth.redirect}")
     private String redirectUri;
 
     @Transactional

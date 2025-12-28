@@ -1,6 +1,6 @@
-package depth.main.seatnow.user.login.entity;
+package depth.main.seatnow.domain.user.entity;
 
-import depth.main.seatnow.user.login.entity.enums.Role;
+import depth.main.seatnow.domain.user.entity.enums.Role;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;

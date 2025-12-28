@@ -1,4 +1,4 @@
-package depth.main.seatnow.user.login.util;
+package depth.main.seatnow.global.util;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;

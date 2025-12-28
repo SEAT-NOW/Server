@@ -1,6 +1,6 @@
-package depth.main.seatnow.user.login.repository;
+package depth.main.seatnow.domain.user.repository;
 
-import depth.main.seatnow.user.login.entity.User;
+import depth.main.seatnow.domain.user.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;

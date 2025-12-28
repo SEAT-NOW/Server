@@ -1,6 +1,6 @@
-package depth.main.seatnow.user.login.infrastructure;
+package depth.main.seatnow.infrastructure.external.kakao;
 
-import depth.main.seatnow.user.login.dto.KakaoDTO;
+import depth.main.seatnow.domain.auth.dto.response.KakaoDTO;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestHeader;

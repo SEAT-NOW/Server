@@ -1,4 +1,4 @@
-package depth.main.seatnow.user.login.dto;
+package depth.main.seatnow.domain.auth.dto.response;
 
 import lombok.Builder;
 import lombok.Getter;

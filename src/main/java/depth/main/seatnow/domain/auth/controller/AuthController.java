@@ -1,8 +1,8 @@
-package depth.main.seatnow.user.login.controller;
+package depth.main.seatnow.domain.auth.controller;
 
 import depth.main.seatnow.global.common.ApiResponse;
-import depth.main.seatnow.user.login.dto.AuthResponseDto;
-import depth.main.seatnow.user.login.service.AuthService;
+import depth.main.seatnow.domain.auth.dto.response.AuthResponseDto;
+import depth.main.seatnow.domain.auth.service.AuthService;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;

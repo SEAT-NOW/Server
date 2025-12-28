@@ -12,6 +12,7 @@ public enum ErrorCode {
     EXPIRED_VERIFICATION_CODE("4003", "인증 시간이 만료되었습니다. 다시 시도해주세요."),
 
     UNAUTHORIZED("4010", "인증이 필요합니다."),
+    INVALID_TOKEN("4011", "잘못된 토큰입니다."),
 
     FORBIDDEN("4030", "접근 권한이 없습니다."),
 
@@ -21,6 +22,7 @@ public enum ErrorCode {
 
     SERVER_ERROR("5000", "서버 내부 오류입니다."),
     EXTERNAL_API_ERROR("5001", "외부 시스템과의 통신 중 오류가 발생했습니다.");
+
 
 
     private final String code;

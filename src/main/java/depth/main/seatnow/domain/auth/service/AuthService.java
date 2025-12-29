@@ -1,5 +1,7 @@
 package depth.main.seatnow.domain.auth.service;
 
+import depth.main.seatnow.domain.user.entity.RefreshToken;
+import depth.main.seatnow.domain.user.repository.RefreshTokenRepository;
 import depth.main.seatnow.global.exception.custom.NotFoundException;
 import depth.main.seatnow.global.exception.custom.UnauthorizedException;
 import depth.main.seatnow.global.exception.error.ErrorCode;
@@ -25,6 +27,7 @@ public class AuthService {
     private final KakaoUserClient kakaoUserClient;
     private final UserRepository userRepository;
     private final JwtUtil jwtUtil;
+    private final RefreshTokenRepository refreshTokenRepository;
 
     @Value("${kakao.auth.client}")
     private String clientId;
@@ -55,6 +58,16 @@ public class AuthService {
         String accessToken = jwtUtil.createAccessToken(String.valueOf(user.getSocialId()), user.getRole().toString());
         String refreshToken = jwtUtil.createRefreshToken(String.valueOf(user.getSocialId()));
 
+        //refreshToken DB 저장 or update
+        RefreshToken rt = refreshTokenRepository.findByKey(String.valueOf(socialId))
+                .orElse(RefreshToken.builder()
+                        .key(String.valueOf(socialId))
+                        .value(refreshToken)
+                        .build());
+
+        rt.updateValue(refreshToken);
+        refreshTokenRepository.save(rt);
+
         return AuthResponseDto.TokenDto.builder()
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
@@ -69,11 +82,21 @@ public class AuthService {
         }
 
         String socialId = jwtUtil.getSocialId(refreshToken);
+
+        RefreshToken storedToken = refreshTokenRepository.findByKey(socialId)
+                .orElseThrow(() -> new UnauthorizedException(ErrorCode.INVALID_TOKEN));
+
+        if (!storedToken.getValue().equals(refreshToken)) {
+            throw new UnauthorizedException(ErrorCode.INVALID_TOKEN);
+        }
+
         User user = userRepository.findBySocialId(Long.parseLong(socialId))
                 .orElseThrow(() -> new NotFoundException(ErrorCode.NOT_FOUND));
 
         String newAccessToken = jwtUtil.createAccessToken(String.valueOf(user.getSocialId()), user.getRole().toString());
         String newRefreshToken = jwtUtil.createRefreshToken(String.valueOf(user.getSocialId()));
+
+        storedToken.updateValue(newRefreshToken);
 
         return AuthResponseDto.TokenDto.builder()
                 .accessToken(newAccessToken)

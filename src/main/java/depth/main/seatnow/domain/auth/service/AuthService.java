@@ -59,7 +59,7 @@ public class AuthService {
         RefreshToken storedToken = validateAndGetStoredToken(refreshToken);
 
         // 2. 유저 조회
-        User user = getUser(storedToken.getKey());
+        User user = getUser(storedToken.getId());
 
         // 3. 토큰 교체 (Access, Refresh 둘 다 갱신)
         return rotateTokens(storedToken, user);
@@ -97,14 +97,11 @@ public class AuthService {
         String accessToken = jwtUtil.createAccessToken(String.valueOf(user.getSocialId()), user.getRole().toString());
         String refreshToken = jwtUtil.createRefreshToken(String.valueOf(user.getSocialId()));
 
-        // 이미 있으면 가져오고, 없으면 새로 빌더로 생성
-        RefreshToken rt = refreshTokenRepository.findByKey(String.valueOf(user.getSocialId()))
-                .orElse(RefreshToken.builder()
-                        .key(String.valueOf(user.getSocialId()))
-                        .value(refreshToken)
-                        .build());
+        RefreshToken rt = RefreshToken.builder()
+                .id(String.valueOf(user.getSocialId()))
+                .refreshToken(refreshToken)
+                .build();
 
-        rt.updateValue(refreshToken);
         refreshTokenRepository.save(rt);
 
         return AuthResponseDto.TokenDto.builder()
@@ -125,7 +122,7 @@ public class AuthService {
         RefreshToken storedToken = refreshTokenRepository.findByKey(socialId)
                 .orElseThrow(() -> new UnauthorizedException(ErrorCode.INVALID_REFRESH_TOKEN));
 
-        if (!storedToken.getValue().equals(token)) {
+        if (!storedToken.getRefreshToken().equals(token)) {
             throw new UnauthorizedException(ErrorCode.INVALID_REFRESH_TOKEN);
         }
 
@@ -141,7 +138,8 @@ public class AuthService {
         String accessToken = jwtUtil.createAccessToken(String.valueOf(user.getSocialId()), user.getRole().toString());
         String refreshToken = jwtUtil.createRefreshToken(String.valueOf(user.getSocialId()));
 
-        storedToken.updateValue(refreshToken);
+        storedToken.updateRefreshToken(refreshToken);
+        refreshTokenRepository.save(storedToken);
 
         return AuthResponseDto.TokenDto.builder()
                 .accessToken(accessToken)

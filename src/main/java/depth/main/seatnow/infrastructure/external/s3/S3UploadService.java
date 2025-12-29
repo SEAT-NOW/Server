@@ -21,7 +21,7 @@ public class S3UploadService {
 
     public String uploadFile(MultipartFile file) {
         // 파일명 중복 방지를 위한 고유값 생성
-        String fileName = UUID.randomUUID() + "-" + file.getOriginalFilename();
+        String fileName = "temp/" + UUID.randomUUID() + "-" + file.getOriginalFilename();
 
         try {
             PutObjectRequest putObjectRequest = PutObjectRequest.builder()

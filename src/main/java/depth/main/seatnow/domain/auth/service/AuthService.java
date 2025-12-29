@@ -77,17 +77,14 @@ public class AuthService {
     //토큰 재발급(access,refresh 토큰 둘다 재발급)
     @Transactional
     public AuthResponseDto.TokenDto reissue(String refreshToken) {
-        if (!jwtUtil.validateToken(refreshToken)) {
-            throw new UnauthorizedException(ErrorCode.INVALID_TOKEN);
-        }
-
+        jwtUtil.validateToken(refreshToken);
         String socialId = jwtUtil.getSocialId(refreshToken);
 
         RefreshToken storedToken = refreshTokenRepository.findByKey(socialId)
-                .orElseThrow(() -> new UnauthorizedException(ErrorCode.INVALID_TOKEN));
+                .orElseThrow(() -> new UnauthorizedException(ErrorCode.INVALID_REFRESH_TOKEN));
 
         if (!storedToken.getValue().equals(refreshToken)) {
-            throw new UnauthorizedException(ErrorCode.INVALID_TOKEN);
+            throw new UnauthorizedException(ErrorCode.INVALID_REFRESH_TOKEN);
         }
 
         User user = userRepository.findBySocialId(Long.parseLong(socialId))

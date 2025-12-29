@@ -4,26 +4,26 @@ import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.data.redis.core.RedisHash;
 
 @Getter
 @NoArgsConstructor
-@Entity
+@RedisHash(value = "refreshToken", timeToLive = 1209600) //14일
 @Table(name = "refresh_token")
 public class RefreshToken {
 
     @Id
-    private String key;
+    private String id;
 
-    private String value;
+    private String refreshToken;
 
     @Builder
-    public RefreshToken(String key, String value) {
-        this.key = key;
-        this.value = value;
+    public RefreshToken(String id, String refreshToken) {
+        this.id = id;
+        this.refreshToken = refreshToken;
     }
 
-    public RefreshToken updateValue(String token) {
-        this.value = token;
-        return this;
+    public void updateRefreshToken(String token) {
+        this.refreshToken = token;
     }
 }

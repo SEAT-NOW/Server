@@ -22,4 +22,11 @@ public class StoreImage {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "store_id")
     private Store store;
+    public static StoreImage create(String imageUrl, boolean isMain, Store store) {
+        return StoreImage.builder()
+                .imageUrl(imageUrl)
+                .isMain(isMain)
+                .store(store)
+                .build();
+    }
 }

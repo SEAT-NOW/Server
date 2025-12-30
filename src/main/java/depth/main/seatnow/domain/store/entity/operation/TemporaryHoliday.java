@@ -25,4 +25,12 @@ public class TemporaryHoliday {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "store_id")
     private Store store;
+
+    public static TemporaryHoliday create(LocalDate startDate, LocalDate endDate, Store store) {
+        return TemporaryHoliday.builder()
+                .startDate(startDate)
+                .endDate(endDate)
+                .store(store)
+                .build();
+    }
 }

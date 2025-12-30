@@ -39,7 +39,14 @@ public class Store extends BaseTimeEntity {
     @Column(nullable = false)
     private String address; // 주소
 
-    private String universityName; // 주변 대학명 (선택)
+    @ElementCollection // 1:N 관계의 단순 문자열 리스트를 저장
+    @CollectionTable(
+            name = "store_university",
+            joinColumns = @JoinColumn(name = "store_id")
+    )
+    @Column(name = "university_name")
+    @Builder.Default
+    private List<String> universityNames = new ArrayList<>();
 
     @Column(nullable = false)
     private String storePhone; // 가게 연락처

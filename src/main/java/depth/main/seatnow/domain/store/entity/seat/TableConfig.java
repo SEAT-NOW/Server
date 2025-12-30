@@ -33,4 +33,12 @@ public class TableConfig extends BaseTimeEntity {
         return tableType * tableCount;
     }
 
+    public static TableConfig create(Integer type, Integer count, Space space) {
+        return TableConfig.builder()
+                .tableType(type)
+                .tableCount(count)
+                .usedCount(0)
+                .space(space)
+                .build();
+    }
 }

@@ -29,4 +29,10 @@ public class Space {
     @OneToMany(mappedBy = "space", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<TableConfig> tableConfigs = new ArrayList<>();
 
+    public static Space create(String name, Store store) {
+        return Space.builder()
+                .name(name)
+                .store(store)
+                .build();
+    }
 }

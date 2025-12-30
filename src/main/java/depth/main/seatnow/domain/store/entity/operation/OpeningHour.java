@@ -30,4 +30,13 @@ public class OpeningHour {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "store_id")
     private Store store;
+
+    public static OpeningHour create(DayOfWeek dayOfWeek, LocalTime startTime, LocalTime endTime, Store store) {
+        return OpeningHour.builder()
+                .dayOfWeek(dayOfWeek)
+                .startTime(startTime)
+                .endTime(endTime)
+                .store(store)
+                .build();
+    }
 }

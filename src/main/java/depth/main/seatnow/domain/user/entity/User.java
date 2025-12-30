@@ -2,14 +2,13 @@ package depth.main.seatnow.domain.user.entity;
 
 import depth.main.seatnow.domain.user.entity.enums.Role;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
+@Builder
 @Table(name = "users")
 public class User {
 
@@ -30,10 +29,5 @@ public class User {
     @Enumerated(EnumType.STRING)
     private Role role;
 
-    @Builder
-    public User(Long socialId, String nickname, Role role) {
-        this.socialId = socialId;
-        this.nickname = nickname;
-        this.role = role;
-    }
+
 }

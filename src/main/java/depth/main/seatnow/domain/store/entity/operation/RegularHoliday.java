@@ -26,4 +26,12 @@ public class RegularHoliday {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "store_id")
     private Store store;
+
+    public static RegularHoliday create(DayOfWeek dayOfWeek, Integer weekInfo, Store store) {
+        return RegularHoliday.builder()
+                .dayOfWeek(dayOfWeek)
+                .weekInfo(weekInfo)
+                .store(store)
+                .build();
+    }
 }

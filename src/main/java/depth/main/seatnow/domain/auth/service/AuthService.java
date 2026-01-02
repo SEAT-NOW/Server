@@ -1,5 +1,6 @@
 package depth.main.seatnow.domain.auth.service;
 
+import depth.main.seatnow.domain.auth.dto.request.OwnerLoginRequest;
 import depth.main.seatnow.global.exception.custom.NotFoundException;
 import depth.main.seatnow.global.exception.custom.UnauthorizedException;
 import depth.main.seatnow.global.exception.error.ErrorCode;
@@ -13,6 +14,7 @@ import depth.main.seatnow.domain.user.repository.UserRepository;
 import depth.main.seatnow.global.util.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,6 +27,7 @@ public class AuthService {
     private final KakaoUserClient kakaoUserClient;
     private final UserRepository userRepository;
     private final JwtUtil jwtUtil;
+    private final PasswordEncoder passwordEncoder;
 
     @Value("${kakao.auth.client}")
     private String clientId;
@@ -52,8 +55,27 @@ public class AuthService {
         User user = userRepository.findBySocialId(socialId).orElseGet(() -> signup(kakaoProfile));
 
         //jwt 토큰 만들기(자체 토큰)
-        String accessToken = jwtUtil.createAccessToken(String.valueOf(user.getSocialId()), user.getRole().toString());
-        String refreshToken = jwtUtil.createRefreshToken(String.valueOf(user.getSocialId()));
+        String accessToken = jwtUtil.createAccessToken(String.valueOf(user.getId()), user.getRole().toString());
+        String refreshToken = jwtUtil.createRefreshToken(String.valueOf(user.getId()));
+
+        return AuthResponseDto.TokenDto.builder()
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .build();
+    }
+    @Transactional
+    public AuthResponseDto.TokenDto ownerLogin(OwnerLoginRequest request) {
+        // 1. 이메일로 유저 찾기 (UserRepository 활용)
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new NotFoundException(ErrorCode.NOT_FOUND));
+
+        // 2. PasswordEncoder로 비번 대조
+        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+            throw new UnauthorizedException(ErrorCode.UNAUTHORIZED);
+        }
+
+        String accessToken = jwtUtil.createAccessToken(String.valueOf(user.getId()), user.getRole().toString());
+        String refreshToken = jwtUtil.createRefreshToken(String.valueOf(user.getId()));
 
         return AuthResponseDto.TokenDto.builder()
                 .accessToken(accessToken)
@@ -68,12 +90,12 @@ public class AuthService {
             throw new UnauthorizedException(ErrorCode.INVALID_TOKEN);
         }
 
-        String socialId = jwtUtil.getSocialId(refreshToken);
-        User user = userRepository.findBySocialId(Long.parseLong(socialId))
+        String userId = jwtUtil.getUserId(refreshToken);
+        User user = userRepository.findById(Long.parseLong(userId))
                 .orElseThrow(() -> new NotFoundException(ErrorCode.NOT_FOUND));
 
-        String newAccessToken = jwtUtil.createAccessToken(String.valueOf(user.getSocialId()), user.getRole().toString());
-        String newRefreshToken = jwtUtil.createRefreshToken(String.valueOf(user.getSocialId()));
+        String newAccessToken = jwtUtil.createAccessToken(String.valueOf(user.getId()), user.getRole().toString());
+        String newRefreshToken = jwtUtil.createRefreshToken(String.valueOf(user.getId()));
 
         return AuthResponseDto.TokenDto.builder()
                 .accessToken(newAccessToken)
@@ -89,4 +111,6 @@ public class AuthService {
                 .build();
         return userRepository.save(newUser);
     }
+
+
 }

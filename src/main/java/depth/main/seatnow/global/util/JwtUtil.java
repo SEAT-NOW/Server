@@ -28,10 +28,10 @@ public class JwtUtil {
         this.refreshTokenValiditySeconds = refreshTokenValidityTime * 10000;
     }
 
-    public String createAccessToken(String socialId, String role) {
+    public String createAccessToken(String userId, String role) {
         Date now = new Date();
         return Jwts.builder()
-                .setSubject(socialId)
+                .setSubject(userId)
                 .claim("role", role)
                 .setIssuedAt(now)
                 .setExpiration(new Date(now.getTime() + accessTokenValiditySeconds))
@@ -39,10 +39,10 @@ public class JwtUtil {
                 .compact();
     }
 
-    public String createRefreshToken(String socialId) {
+    public String createRefreshToken(String userId) {
         Date now = new Date();
         return Jwts.builder()
-                .setSubject(socialId)
+                .setSubject(userId)
                 .setIssuedAt(now)
                 .setExpiration(new Date(now.getTime() + refreshTokenValiditySeconds))
                 .signWith(key, SignatureAlgorithm.HS256)
@@ -66,7 +66,7 @@ public class JwtUtil {
         return false;
     }
 
-    public String getSocialId(String token) {
+    public String getUserId(String token) {
         return Jwts.parserBuilder().setSigningKey(key).build()
                 .parseClaimsJws(token)
                 .getBody()

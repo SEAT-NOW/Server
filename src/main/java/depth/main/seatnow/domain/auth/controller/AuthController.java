@@ -1,5 +1,6 @@
 package depth.main.seatnow.domain.auth.controller;
 
+import depth.main.seatnow.domain.auth.dto.request.OwnerLoginRequest;
 import depth.main.seatnow.global.common.ApiResponse;
 import depth.main.seatnow.domain.auth.dto.response.AuthResponseDto;
 import depth.main.seatnow.domain.auth.service.AuthService;
@@ -7,6 +8,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 @Tag(name = "인증/로그인", description = "카카오 로그인 및 토큰 재발급 API")
@@ -46,6 +48,17 @@ public class AuthController {
             HttpServletResponse response
     ) {
         AuthResponseDto.TokenDto tokenDto = authService.reissue(refreshToken);
+
+        response.setHeader("Authorization", "Bearer " + tokenDto.getAccessToken());
+
+        return ApiResponse.ok(tokenDto);
+    }
+    @PostMapping("/auth/login/owner")
+    public ApiResponse<AuthResponseDto.TokenDto> ownerLogin(
+            @Valid @RequestBody OwnerLoginRequest request,
+            HttpServletResponse response
+    ) {
+        AuthResponseDto.TokenDto tokenDto = authService.ownerLogin(request);
 
         response.setHeader("Authorization", "Bearer " + tokenDto.getAccessToken());
 

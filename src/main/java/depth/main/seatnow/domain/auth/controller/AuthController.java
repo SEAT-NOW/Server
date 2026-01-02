@@ -4,8 +4,13 @@ import depth.main.seatnow.domain.auth.dto.request.OwnerLoginRequest;
 import depth.main.seatnow.global.common.ApiResponse;
 import depth.main.seatnow.domain.auth.dto.response.AuthResponseDto;
 import depth.main.seatnow.domain.auth.service.AuthService;
+import depth.main.seatnow.global.exception.error.ErrorResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
@@ -54,6 +59,38 @@ public class AuthController {
 
         return ApiResponse.ok(tokenDto);
     }
+
+    @Operation(
+            summary = "사장님 로그인",
+            description = "이메일과 비밀번호를 사용하여 액세스 토큰과 리프레시 토큰을 발급합니다."
+    )
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "200",
+                    description = "로그인 성공",
+                    content = @Content(
+                            schema = @Schema(implementation = ApiResponse.class),
+                            mediaType = "application/json",
+                            examples = @ExampleObject(
+                                    name = "로그인 성공",
+                                    value = "{\"success\": true, \"data\": {\"accessToken\": \"Bearer ey...\", \"refreshToken\": \"ey...\"}, \"message\": null}"
+                            )
+                    )
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "404",
+                    description = "로그인 실패 (유저 없음)",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    name = "유저 없음",
+                                    summary = "NOT_FOUND",
+                                    value = "{\"code\": \"4040\", \"message\": \"존재하지 않는 사용자입니다.\", \"detail\": null}"
+                            )
+                    )
+            )
+    })
     @PostMapping("/login/owner")
     public ApiResponse<AuthResponseDto.TokenDto> ownerLogin(
             @Valid @RequestBody OwnerLoginRequest request,

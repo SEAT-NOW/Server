@@ -60,11 +60,11 @@ public class AuthService {
     public AuthResponseDto.TokenDto ownerLogin(OwnerLoginRequest request) {
         // 1. 이메일로 유저 찾기 (UserRepository 활용)
         User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new NotFoundException(ErrorCode.NOT_FOUND));
+                .orElseThrow(() -> new UnauthorizedException(ErrorCode.NOT_FOUND));
 
         // 2. PasswordEncoder로 비번 대조
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            throw new UnauthorizedException(ErrorCode.UNAUTHORIZED);
+            throw new UnauthorizedException(ErrorCode.NOT_FOUND);
         }
 
         return createTokenDto(user);

@@ -16,7 +16,7 @@ public enum ErrorCode {
 
     FORBIDDEN("4030", "접근 권한이 없습니다."),
 
-    NOT_FOUND("4040", "리소스를 찾을 수 없습니다."),
+    NOT_FOUND("4040", "존재하지 않는 사용자입니다."),
 
     CONFLICT("4090", "이미 존재하는 리소스입니다."),
     DUPLICATE_EMAIL("4091", "이미 가입된 이메일입니다."),

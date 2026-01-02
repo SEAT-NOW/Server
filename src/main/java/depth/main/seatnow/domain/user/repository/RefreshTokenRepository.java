@@ -1,12 +1,33 @@
 package depth.main.seatnow.domain.user.repository;
 
-import depth.main.seatnow.domain.user.entity.RefreshToken;
-import org.springframework.data.jpa.repository.JpaRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 @Repository
-public interface RefreshTokenRepository extends JpaRepository<RefreshToken, Long> {
-    Optional<RefreshToken> findByKey(String key);
+@RequiredArgsConstructor
+public class RefreshTokenRepository {
+
+    private final StringRedisTemplate redisTemplate;
+
+    public void save(String socialId, String refreshToken) {
+        ValueOperations<String, String> values = redisTemplate.opsForValue();
+
+        values.set(socialId, refreshToken, 1209600, TimeUnit.SECONDS);//14일
+    }
+
+    public Optional<String> findById(String socialId) {
+        ValueOperations<String, String> values = redisTemplate.opsForValue();
+        String token = values.get(socialId);
+
+        return Optional.ofNullable(token);
+    }
+
+    public void delete(String socialId) {
+        redisTemplate.delete(socialId);
+    }
 }

@@ -1,6 +1,5 @@
 package depth.main.seatnow.domain.store.service;
 
-import depth.main.seatnow.domain.store.dto.request.ImageRequest;
 import depth.main.seatnow.domain.store.dto.request.OperationRequest;
 import depth.main.seatnow.domain.store.dto.request.OwnerSignupRequest;
 import depth.main.seatnow.domain.store.dto.request.SpaceRequest;
@@ -19,7 +18,9 @@ import depth.main.seatnow.global.exception.custom.ConflictException;
 import depth.main.seatnow.infrastructure.external.s3.S3UploadService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -33,8 +34,9 @@ public class StoreService {
     private final UserRepository userRepository;
     private final StoreRepository storeRepository;
     private final S3UploadService s3UploadService;
+    private final PasswordEncoder passwordEncoder;
 
-    public void registerOwner(OwnerSignupRequest request) {
+    public void registerOwner(OwnerSignupRequest request, MultipartFile licenseImage, List<MultipartFile> storeImages) {
         // 계정 중복 검증
         if (userRepository.existsByEmail(request.getAccount().getEmail())) {
             throw new ConflictException(DUPLICATE_EMAIL);
@@ -48,14 +50,14 @@ public class StoreService {
         // 유저 저장
         User user = User.builder()
                 .email(request.getAccount().getEmail())
-                .password(request.getAccount().getPassword())
+                .password(passwordEncoder.encode(request.getAccount().getPassword()))
                 .phoneNumber(request.getAccount().getPhoneNumber())
                 .role(Role.OWNER)
                 .build();
         userRepository.save(user);
 
-        // 사업자 정보 처리
-        String finalLicense = s3UploadService.confirmImage(request.getBusiness().getBusinessLicenseUrl());
+        // 사업자 등록증 S3 업로드
+        String licenseUrl = s3UploadService.uploadFileToPath(licenseImage, "permanent/license");
 
         Store store = Store.builder()
                 .user(user)
@@ -65,16 +67,34 @@ public class StoreService {
                 .address(request.getBusiness().getAddress())
                 .universityNames(request.getBusiness().getUniversityNames())
                 .storePhone(request.getBusiness().getStorePhone())
-                .businessLicenseUrl(finalLicense)
+                .businessLicenseUrl(licenseUrl)
                 .build();
 
         // 부가 정보 매핑
         mapOperations(request.getOperation(), store);
         mapLayouts(request.getLayout(), store);
-        mapImages(request.getImages(), store);
+
+        // 매장 이미지 일괄 업로드 및 매핑
+        uploadAndMapImages(storeImages, store);
 
         // 가게 저장
         storeRepository.save(store);
+    }
+
+    private void uploadAndMapImages(List<MultipartFile> storeImages, Store store) {
+        if (storeImages == null || storeImages.isEmpty()) return;
+
+        for (int i = 0; i < storeImages.size(); i++) {
+            MultipartFile imgFile = storeImages.get(i);
+            String imageUrl = s3UploadService.uploadFileToPath(imgFile, "permanent/store");
+
+            // 첫 번째 이미지를 기본(Primary) 이미지로 설정
+            boolean isPrimary = (i == 0);
+
+            store.getImages().add(
+                    StoreImage.create(imageUrl, isPrimary, store)
+            );
+        }
     }
 
     private void mapOperations(OperationRequest request, Store store) {
@@ -109,13 +129,4 @@ public class StoreService {
         });
     }
 
-    private void mapImages(List<ImageRequest> images, Store store) {
-        images.forEach(imgDto -> {
-            String permanentUrl = s3UploadService.confirmImage(imgDto.getImageUrl());
-
-            store.getImages().add(
-                    StoreImage.create(permanentUrl, imgDto.getIsPrimary(), store)
-            );
-        });
-    }
 }

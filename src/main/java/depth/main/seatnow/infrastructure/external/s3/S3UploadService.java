@@ -72,4 +72,23 @@ public class S3UploadService {
             return tempUrl; // 실패 시 원래 URL 반환
         }
     }
+    // 경로(path)를 지정해서 바로 업로드하는 메서드 (permanent용)
+    public String uploadFileToPath(MultipartFile file, String path) {
+        String fileName = path + "/" + UUID.randomUUID() + "-" + file.getOriginalFilename();
+
+        try {
+            PutObjectRequest putObjectRequest = PutObjectRequest.builder()
+                    .bucket(bucket)
+                    .key(fileName)
+                    .contentType(file.getContentType())
+                    .build();
+
+            s3Client.putObject(putObjectRequest,
+                    RequestBody.fromInputStream(file.getInputStream(), file.getSize()));
+
+            return String.format("https://%s.s3.ap-northeast-2.amazonaws.com/%s", bucket, fileName);
+        } catch (IOException e) {
+            throw new RuntimeException("S3 사진 업로드 중 에러가 발생했습니다.", e);
+        }
+    }
 }

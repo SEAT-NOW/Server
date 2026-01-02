@@ -11,8 +11,9 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
-@Tag(name = "인증/로그인", description = "카카오 로그인 및 토큰 재발급 API")
+@Tag(name = "인증/로그인", description = "카카오 로그인 및 사장님 로그인 API")
 @RestController
+@RequestMapping("/auth")
 @RequiredArgsConstructor
 public class AuthController {
 
@@ -22,7 +23,7 @@ public class AuthController {
             summary = "카카오 로그인",
             description = "카카오 인가 코드를 받아 액세스 토큰과 리프레시 토큰을 발급합니다."
     )
-    @GetMapping("/auth/login/kakao")
+    @GetMapping("/login/kakao")
     public ApiResponse<AuthResponseDto.TokenDto> kakaoLogin(
             @Parameter(description = "카카오에서 발급받은 인가 코드")
             @RequestParam("code") String code,
@@ -41,7 +42,7 @@ public class AuthController {
             summary = "토큰 재발급",
             description = "리프레시 토큰을 이용해 만료된 액세스 토큰을 갱신합니다."
     )
-    @PostMapping("/auth/reissue")
+    @PostMapping("/reissue")
     public ApiResponse<AuthResponseDto.TokenDto> reissue(
             @Parameter(description = "유효한 리프레시 토큰", required = true)
             @RequestHeader("RefreshToken") String refreshToken,
@@ -53,7 +54,7 @@ public class AuthController {
 
         return ApiResponse.ok(tokenDto);
     }
-    @PostMapping("/auth/login/owner")
+    @PostMapping("/login/owner")
     public ApiResponse<AuthResponseDto.TokenDto> ownerLogin(
             @Valid @RequestBody OwnerLoginRequest request,
             HttpServletResponse response

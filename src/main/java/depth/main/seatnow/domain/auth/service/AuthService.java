@@ -54,14 +54,7 @@ public class AuthService {
         Long socialId = kakaoProfile.getId();
         User user = userRepository.findBySocialId(socialId).orElseGet(() -> signup(kakaoProfile));
 
-        //jwt 토큰 만들기(자체 토큰)
-        String accessToken = jwtUtil.createAccessToken(String.valueOf(user.getId()), user.getRole().toString());
-        String refreshToken = jwtUtil.createRefreshToken(String.valueOf(user.getId()));
-
-        return AuthResponseDto.TokenDto.builder()
-                .accessToken(accessToken)
-                .refreshToken(refreshToken)
-                .build();
+        return createTokenDto(user);
     }
     @Transactional
     public AuthResponseDto.TokenDto ownerLogin(OwnerLoginRequest request) {
@@ -74,13 +67,7 @@ public class AuthService {
             throw new UnauthorizedException(ErrorCode.UNAUTHORIZED);
         }
 
-        String accessToken = jwtUtil.createAccessToken(String.valueOf(user.getId()), user.getRole().toString());
-        String refreshToken = jwtUtil.createRefreshToken(String.valueOf(user.getId()));
-
-        return AuthResponseDto.TokenDto.builder()
-                .accessToken(accessToken)
-                .refreshToken(refreshToken)
-                .build();
+        return createTokenDto(user);
     }
 
     //토큰 재발급(access,refresh 토큰 둘다 재발급)
@@ -94,15 +81,19 @@ public class AuthService {
         User user = userRepository.findById(Long.parseLong(userId))
                 .orElseThrow(() -> new NotFoundException(ErrorCode.NOT_FOUND));
 
-        String newAccessToken = jwtUtil.createAccessToken(String.valueOf(user.getId()), user.getRole().toString());
-        String newRefreshToken = jwtUtil.createRefreshToken(String.valueOf(user.getId()));
-
-        return AuthResponseDto.TokenDto.builder()
-                .accessToken(newAccessToken)
-                .refreshToken(newRefreshToken)
-                .build();
+        return createTokenDto(user);
     }
 
+    // 토큰 발급 로직
+    private AuthResponseDto.TokenDto createTokenDto(User user) {
+        String accessToken = jwtUtil.createAccessToken(String.valueOf(user.getId()), user.getRole().toString());
+        String refreshToken = jwtUtil.createRefreshToken(String.valueOf(user.getId()));
+
+        return AuthResponseDto.TokenDto.builder()
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .build();
+    }
     private User signup(KakaoDTO.KakaoProfile kakaoProfile) {
         User newUser = User.builder()
                 .socialId(kakaoProfile.getId())

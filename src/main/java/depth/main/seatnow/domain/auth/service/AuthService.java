@@ -2,7 +2,6 @@ package depth.main.seatnow.domain.auth.service;
 
 import depth.main.seatnow.domain.auth.dto.response.AuthResponseDto;
 import depth.main.seatnow.domain.auth.dto.response.KakaoDTO;
-import depth.main.seatnow.domain.user.entity.RefreshToken;
 import depth.main.seatnow.domain.user.entity.User;
 import depth.main.seatnow.domain.user.entity.enums.Role;
 import depth.main.seatnow.domain.user.repository.RefreshTokenRepository;
@@ -55,19 +54,15 @@ public class AuthService {
      */
     @Transactional
     public AuthResponseDto.TokenDto reissue(String refreshToken) {
-        // 1. 토큰 유효성 검증 및 저장된 토큰 조회
-        RefreshToken storedToken = validateAndGetStoredToken(refreshToken);
+        // 1. 토큰 검증 및 SocialId 추출
+        String socialId = validateToken(refreshToken);
 
         // 2. 유저 조회
-        User user = getUser(storedToken.getId());
+        User user = findUser(socialId);
 
-        // 3. 토큰 교체 (Access, Refresh 둘 다 갱신)
-        return rotateTokens(storedToken, user);
+        // 3. 토큰 생성 및 저장
+        return createAndSaveTokens(user);
     }
-
-    // =====================================
-    //  kakaoLogin 관련 메서드
-    // =====================================
 
     private KakaoDTO.KakaoProfile getKakaoProfile(String code) {
         KakaoDTO.OAuthToken oAuthToken = kakaoAuthClient.getOAuthToken(
@@ -94,15 +89,12 @@ public class AuthService {
     }
 
     private AuthResponseDto.TokenDto createAndSaveTokens(User user) {
-        String accessToken = jwtUtil.createAccessToken(String.valueOf(user.getSocialId()), user.getRole().toString());
-        String refreshToken = jwtUtil.createRefreshToken(String.valueOf(user.getSocialId()));
+        String socialId = String.valueOf(user.getSocialId());
 
-        RefreshToken rt = RefreshToken.builder()
-                .id(String.valueOf(user.getSocialId()))
-                .refreshToken(refreshToken)
-                .build();
+        String accessToken = jwtUtil.createAccessToken(socialId, user.getRole().toString());
+        String refreshToken = jwtUtil.createRefreshToken(socialId);
 
-        refreshTokenRepository.save(rt);
+        refreshTokenRepository.save(socialId, refreshToken);
 
         return AuthResponseDto.TokenDto.builder()
                 .accessToken(accessToken)
@@ -110,40 +102,22 @@ public class AuthService {
                 .build();
     }
 
-    // =====================================
-    //  reissue 관련 메서드
-    // =====================================
+    private String validateToken(String refreshToken) {
+        jwtUtil.validateToken(refreshToken);
+        String socialId = jwtUtil.getSocialId(refreshToken);
 
-    private RefreshToken validateAndGetStoredToken(String token) {
-        jwtUtil.validateToken(token);
-
-        String socialId = jwtUtil.getSocialId(token);
-
-        RefreshToken storedToken = refreshTokenRepository.findByKey(socialId)
+        String storedToken = refreshTokenRepository.findById(socialId)
                 .orElseThrow(() -> new UnauthorizedException(ErrorCode.INVALID_REFRESH_TOKEN));
 
-        if (!storedToken.getRefreshToken().equals(token)) {
+        if (!storedToken.equals(refreshToken)) {
             throw new UnauthorizedException(ErrorCode.INVALID_REFRESH_TOKEN);
         }
 
-        return storedToken;
+        return socialId;
     }
 
-    private User getUser(String socialId) {
+    private User findUser(String socialId) {
         return userRepository.findBySocialId(Long.parseLong(socialId))
                 .orElseThrow(() -> new NotFoundException(ErrorCode.NOT_FOUND));
-    }
-
-    private AuthResponseDto.TokenDto rotateTokens(RefreshToken storedToken, User user) {
-        String accessToken = jwtUtil.createAccessToken(String.valueOf(user.getSocialId()), user.getRole().toString());
-        String refreshToken = jwtUtil.createRefreshToken(String.valueOf(user.getSocialId()));
-
-        storedToken.updateRefreshToken(refreshToken);
-        refreshTokenRepository.save(storedToken);
-
-        return AuthResponseDto.TokenDto.builder()
-                .accessToken(accessToken)
-                .refreshToken(refreshToken)
-                .build();
     }
 }

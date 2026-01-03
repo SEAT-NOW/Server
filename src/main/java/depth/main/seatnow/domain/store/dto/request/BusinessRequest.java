@@ -27,6 +27,14 @@ public class BusinessRequest {
     @NotBlank(message = "매장 주소는 필수입니다.")
     private String address;
 
+    @Schema(description = "매장 위도", example = "127.027")
+    @NotBlank(message = "매장 위도는 필수입니다.")
+    private Double latitude; // 위도
+
+    @Schema(description = "매장 경도", example = "37.497")
+    @NotBlank(message = "매장 경도는 필수입니다.")
+    private Double longitude; // 경도
+
     @Schema(description = "인근 대학교 이름 리스트", example = "[\"홍익대학교\", \"연세대학교\"]")
     @NotEmpty(message = "최소 하나 이상의 대학교를 선택해야 합니다.")
     private List<String> universityNames;

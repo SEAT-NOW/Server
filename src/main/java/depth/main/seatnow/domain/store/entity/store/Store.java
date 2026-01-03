@@ -39,6 +39,12 @@ public class Store extends BaseTimeEntity {
     @Column(nullable = false)
     private String address; // 주소
 
+    @Column(nullable = false)
+    private Double latitude; // 위도
+
+    @Column(nullable = false)
+    private Double longitude; // 경도
+
     @ElementCollection // 1:N 관계의 단순 문자열 리스트를 저장
     @CollectionTable(
             name = "store_university",

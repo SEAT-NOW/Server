@@ -65,6 +65,8 @@ public class StoreService {
                 .businessNumber(request.getBusiness().getBusinessNumber())
                 .storeName(request.getBusiness().getStoreName())
                 .address(request.getBusiness().getAddress())
+                .latitude(request.getBusiness().getLatitude())
+                .longitude(request.getBusiness().getLongitude())
                 .universityNames(request.getBusiness().getUniversityNames())
                 .storePhone(request.getBusiness().getStorePhone())
                 .businessLicenseUrl(licenseUrl)

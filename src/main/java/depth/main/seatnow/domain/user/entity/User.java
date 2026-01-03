@@ -2,14 +2,13 @@ package depth.main.seatnow.domain.user.entity;
 
 import depth.main.seatnow.domain.user.entity.enums.Role;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
+@Builder
 @Table(name = "users")
 public class User {
 
@@ -17,17 +16,18 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Long socialId;
+    private Long socialId; // 카카오용
 
-    private String nickname;
+    private String nickname; // 카카오용
+
+    private String email; // 사장님용
+
+    private String password; // 사장님용
+
+    private String phoneNumber; // 사장님용
 
     @Enumerated(EnumType.STRING)
     private Role role;
 
-    @Builder
-    public User(Long socialId, String nickname, Role role) {
-        this.socialId = socialId;
-        this.nickname = nickname;
-        this.role = role;
-    }
+
 }

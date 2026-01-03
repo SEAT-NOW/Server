@@ -66,7 +66,8 @@ public class VerificationController {
             )
     })
     @PostMapping("/business-number")
-    public ApiResponse<Boolean> verify(@RequestBody VerifyBusinessNumberRequest request) {
+    public ApiResponse<Boolean> verify(@RequestBody VerifyBusinessNumberRequest request
+    ) {
         ownerBusinessService.verifyBusinessNumber(request.getBusinessNumber());
         return ApiResponse.ok(true, "사업자 등록번호가 유효하게 확인되었습니다.");
     }
@@ -108,7 +109,8 @@ public class VerificationController {
             )
     })
     @PostMapping("/email")
-    public ApiResponse<Boolean> sendVerificationCode(@Valid @RequestBody EmailSendRequest request) {
+    public ApiResponse<Boolean> sendVerificationCode(@Valid @RequestBody EmailSendRequest request
+    ) {
         emailVerificationService.sendVerificationCode(request.getEmail());
         return ApiResponse.ok(true,"인증 코드가 이메일로 발송되었습니다.");
     }
@@ -140,7 +142,8 @@ public class VerificationController {
             )
     })
     @PostMapping("/email/confirm")
-    public ApiResponse<Boolean> verifyCode(@RequestBody EmailVerifyRequest request) {
+    public ApiResponse<Boolean> verifyCode(@RequestBody EmailVerifyRequest request
+    ) {
         emailVerificationService.verifyCode(request.getEmail(), request.getCode());
         return ApiResponse.ok(true, "인증에 성공하였습니다.");
     }
@@ -174,7 +177,8 @@ public class VerificationController {
             )
     })
     @PostMapping("/sms")
-    public ApiResponse<Boolean> sendSmsVerificationCode(@Valid @RequestBody SmsSendRequest request) {
+    public ApiResponse<Boolean> sendSmsVerificationCode(@Valid @RequestBody SmsSendRequest request
+    ) {
         smsVerificationService.sendVerificationCode(request.getPhoneNumber()); // 인증 코드 발송
         return ApiResponse.ok(true,"인증 코드가 SMS로 발송되었습니다.");
     }
@@ -206,7 +210,8 @@ public class VerificationController {
             )
     })
     @PostMapping("/sms/confirm")
-    public ApiResponse<Boolean> verifySmsCode(@Valid @RequestBody SmsVerifyRequest request) {
+    public ApiResponse<Boolean> verifySmsCode(@Valid @RequestBody SmsVerifyRequest request
+    ) {
         smsVerificationService.verifyCode(request.getPhoneNumber(), request.getCode());
         return ApiResponse.ok(true, "인증에 성공하였습니다.");
     }

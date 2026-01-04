@@ -119,16 +119,28 @@ public class StoreService {
 
     }
     private void mapLayouts(List<SpaceRequest> layout, Store store) {
-        layout.forEach(spaceDto -> {
+        int totalSeats = 0; // 전체 좌석 수를 담을 변수
+
+        for (SpaceRequest spaceDto : layout) {
             Space space = Space.create(spaceDto.getName(), store);
 
-            spaceDto.getTables().forEach(tableDto ->
-                    space.getTableConfigs().add(
-                            TableConfig.create(tableDto.getTableType(), tableDto.getTableCount(), space)
-                    )
-            );
+            for (var tableDto : spaceDto.getTables()) {
+                // TableConfig 생성
+                TableConfig tableConfig = TableConfig.create(
+                        tableDto.getTableType(),
+                        tableDto.getTableCount(),
+                        space
+                );
+                space.getTableConfigs().add(tableConfig);
+
+                // 전체 좌석 수 합산: (테이블 인원수 * 테이블 개수)
+                totalSeats += (tableDto.getTableType() * tableDto.getTableCount());
+            }
             store.getSpaces().add(space);
-        });
+        }
+
+        // Store 엔티티에 합산된 결과 저장
+        store.initializeSeatInfo(totalSeats);
     }
 
 }

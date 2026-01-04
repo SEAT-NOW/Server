@@ -84,10 +84,10 @@ public class StoreController {
             @RequestPart("signupData") @Valid OwnerSignupRequest request,
 
             @Parameter(description = "사업자 등록증 이미지 파일")
-            @RequestPart("licenseImage") MultipartFile licenseImage,
+            @RequestPart(value = "licenseImage", required = false) MultipartFile licenseImage,
 
             @Parameter(description = "매장 사진 리스트")
-            @RequestPart("storeImages") List<MultipartFile> storeImages
+            @RequestPart(value = "storeImages", required = false) List<MultipartFile> storeImages
     ) {
         storeService.registerOwner(request, licenseImage, storeImages);
         return ApiResponse.ok("사장님 회원가입 및 매장 등록이 완료되었습니다.");

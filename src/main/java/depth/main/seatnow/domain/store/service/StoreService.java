@@ -57,7 +57,10 @@ public class StoreService {
         userRepository.save(user);
 
         // 사업자 등록증 S3 업로드
-        String licenseUrl = s3UploadService.uploadFileToPath(licenseImage, "permanent/license");
+        String licenseUrl = null;
+        if (licenseImage != null && !licenseImage.isEmpty()) {
+            licenseUrl = s3UploadService.uploadFileToPath(licenseImage, "permanent/license");
+        }
 
         Store store = Store.builder()
                 .user(user)
@@ -77,15 +80,15 @@ public class StoreService {
         mapLayouts(request.getLayout(), store);
 
         // 매장 이미지 일괄 업로드 및 매핑
-        uploadAndMapImages(storeImages, store);
+        if (storeImages != null && !storeImages.isEmpty()) {
+            uploadAndMapImages(storeImages, store);
+        }
 
         // 가게 저장
         storeRepository.save(store);
     }
 
     private void uploadAndMapImages(List<MultipartFile> storeImages, Store store) {
-        if (storeImages == null || storeImages.isEmpty()) return;
-
         for (int i = 0; i < storeImages.size(); i++) {
             MultipartFile imgFile = storeImages.get(i);
             String imageUrl = s3UploadService.uploadFileToPath(imgFile, "permanent/store");

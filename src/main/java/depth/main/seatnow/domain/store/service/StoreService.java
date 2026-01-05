@@ -36,7 +36,7 @@ public class StoreService {
     private final S3UploadService s3UploadService;
     private final PasswordEncoder passwordEncoder;
 
-    public void registerOwner(OwnerSignupRequest request, MultipartFile licenseImage, List<MultipartFile> storeImages) {
+    public Long registerOwner(OwnerSignupRequest request, MultipartFile licenseImage, List<MultipartFile> storeImages) {
         // 계정 중복 검증
         if (userRepository.existsByEmail(request.getAccount().getEmail())) {
             throw new ConflictException(DUPLICATE_EMAIL);
@@ -57,7 +57,10 @@ public class StoreService {
         userRepository.save(user);
 
         // 사업자 등록증 S3 업로드
-        String licenseUrl = s3UploadService.uploadFileToPath(licenseImage, "permanent/license");
+        String licenseUrl = null;
+        if (licenseImage != null && !licenseImage.isEmpty()) {
+            licenseUrl = s3UploadService.uploadFileToPath(licenseImage, "permanent/license");
+        }
 
         Store store = Store.builder()
                 .user(user)
@@ -65,6 +68,8 @@ public class StoreService {
                 .businessNumber(request.getBusiness().getBusinessNumber())
                 .storeName(request.getBusiness().getStoreName())
                 .address(request.getBusiness().getAddress())
+                .latitude(request.getBusiness().getLatitude())
+                .longitude(request.getBusiness().getLongitude())
                 .universityNames(request.getBusiness().getUniversityNames())
                 .storePhone(request.getBusiness().getStorePhone())
                 .businessLicenseUrl(licenseUrl)
@@ -75,15 +80,17 @@ public class StoreService {
         mapLayouts(request.getLayout(), store);
 
         // 매장 이미지 일괄 업로드 및 매핑
-        uploadAndMapImages(storeImages, store);
+        if (storeImages != null && !storeImages.isEmpty()) {
+            uploadAndMapImages(storeImages, store);
+        }
 
         // 가게 저장
-        storeRepository.save(store);
+        Store saveStore = storeRepository.save(store);
+
+        return saveStore.getId();
     }
 
     private void uploadAndMapImages(List<MultipartFile> storeImages, Store store) {
-        if (storeImages == null || storeImages.isEmpty()) return;
-
         for (int i = 0; i < storeImages.size(); i++) {
             MultipartFile imgFile = storeImages.get(i);
             String imageUrl = s3UploadService.uploadFileToPath(imgFile, "permanent/store");
@@ -117,16 +124,28 @@ public class StoreService {
 
     }
     private void mapLayouts(List<SpaceRequest> layout, Store store) {
-        layout.forEach(spaceDto -> {
+        int totalSeats = 0; // 전체 좌석 수를 담을 변수
+
+        for (SpaceRequest spaceDto : layout) {
             Space space = Space.create(spaceDto.getName(), store);
 
-            spaceDto.getTables().forEach(tableDto ->
-                    space.getTableConfigs().add(
-                            TableConfig.create(tableDto.getTableType(), tableDto.getTableCount(), space)
-                    )
-            );
+            for (var tableDto : spaceDto.getTables()) {
+                // TableConfig 생성
+                TableConfig tableConfig = TableConfig.create(
+                        tableDto.getTableType(),
+                        tableDto.getTableCount(),
+                        space
+                );
+                space.getTableConfigs().add(tableConfig);
+
+                // 전체 좌석 수 합산: (테이블 인원수 * 테이블 개수)
+                totalSeats += (tableDto.getTableType() * tableDto.getTableCount());
+            }
             store.getSpaces().add(space);
-        });
+        }
+
+        // Store 엔티티에 합산된 결과 저장
+        store.initializeSeatInfo(totalSeats);
     }
 
 }

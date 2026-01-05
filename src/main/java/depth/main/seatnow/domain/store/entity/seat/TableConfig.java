@@ -28,17 +28,12 @@ public class TableConfig extends BaseTimeEntity {
     @JoinColumn(name = "space_id")
     private Space space;
 
-    // 총 좌석 수 계산
-    public int getTotalSeatCount() {
-        return tableType * tableCount;
-    }
-
     public static TableConfig create(Integer type, Integer count, Space space) {
         return TableConfig.builder()
                 .tableType(type)
                 .tableCount(count)
-                .usedCount(0)
                 .space(space)
                 .build();
     }
+
 }

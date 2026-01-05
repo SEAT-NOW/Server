@@ -10,11 +10,12 @@ spring:
   # JPA 및 기타 공통 설정들
   jpa:
     hibernate:
-      ddl-auto: update # 애플리케이션 실행 시 Entity 변경 사항을 DB에 자동 반영
-    show-sql: true # 실행되는 SQL 쿼리를 로그로 출력(디버깅용)
+      ddl-auto: create # 애플리케이션 실행 시 Entity 변경 사항을 DB에 자동 반영
+    show-sql: false # 실행되는 SQL 쿼리를 로그로 출력(디버깅용)
     properties:
       hibernate:
-        format_sql: true # SQL 쿼리를 보기 좋게 정렬
+        format_sql: false # SQL 쿼리를 보기 좋게 정렬
+        dialect: org.hibernate.dialect.MySQLDialect
 
 springdoc:
   swagger-ui:
@@ -44,7 +45,20 @@ coolsms:
 kakao:
   local:
     base-url: https://dapi.kakao.com
+  auth:
+    redirect: "https://seatnow.r-e.kr/auth/login/kakao" # 배포용
+
+jwt:
+  access-token-validity-in-seconds: 3600 # 1시간
+  refresh-token-validity-in-seconds: 1209600 # 14일
 
 google:
   places:
-    base-url: https://maps.googleapis.com
+    base-url: https://places.googleapis.com
+
+cloud:
+  aws:
+    region:
+      static: ap-northeast-2
+    stack:
+      auto: false

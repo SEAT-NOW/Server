@@ -13,7 +13,6 @@ import java.security.Key;
 import java.util.Date;
 
 @Component
-@Slf4j
 public class JwtUtil {
 
     private final Key key;
@@ -26,14 +25,14 @@ public class JwtUtil {
 
         byte[] keyBytes = Decoders.BASE64.decode(secretKey);
         this.key = Keys.hmacShaKeyFor(keyBytes);
-        this.accessTokenValiditySeconds = accessTokenValidityTime * 10000;
-        this.refreshTokenValiditySeconds = refreshTokenValidityTime * 10000;
+        this.accessTokenValiditySeconds = accessTokenValidityTime * 1000;
+        this.refreshTokenValiditySeconds = refreshTokenValidityTime * 1000;
     }
 
-    public String createAccessToken(String socialId, String role) {
+    public String createAccessToken(String userId, String role) {
         Date now = new Date();
         return Jwts.builder()
-                .setSubject(socialId)
+                .setSubject(userId)
                 .claim("role", role)
                 .setIssuedAt(now)
                 .setExpiration(new Date(now.getTime() + accessTokenValiditySeconds))
@@ -41,10 +40,10 @@ public class JwtUtil {
                 .compact();
     }
 
-    public String createRefreshToken(String socialId) {
+    public String createRefreshToken(String userId) {
         Date now = new Date();
         return Jwts.builder()
-                .setSubject(socialId)
+                .setSubject(userId)
                 .setIssuedAt(now)
                 .setExpiration(new Date(now.getTime() + refreshTokenValiditySeconds))
                 .signWith(key, SignatureAlgorithm.HS256)
@@ -62,7 +61,7 @@ public class JwtUtil {
         }
     }
 
-    public String getSocialId(String token) {
+    public String getUserId(String token) {
         try {
             return Jwts.parserBuilder().setSigningKey(key).build()
                     .parseClaimsJws(token)

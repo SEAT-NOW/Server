@@ -1,5 +1,6 @@
 package depth.main.seatnow.global.security.filter;
 
+import depth.main.seatnow.global.exception.custom.UnauthorizedException;
 import depth.main.seatnow.global.security.token.CustomUserDetailsService;
 import depth.main.seatnow.global.util.JwtUtil;
 import jakarta.servlet.FilterChain;
@@ -24,14 +25,20 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
         String token = resolveToken(request); // 헤더에서 토큰 추출
 
-        if (token != null && jwtUtil.validateToken(token)) {
-            String userId = jwtUtil.getUserId(token);
-            UserDetails userDetails = customUserDetailsService.loadUserByUsername(userId);
+        if (token != null) {
+            try {
+                jwtUtil.validateToken(token);
 
-            // 시큐리티 내부에 "이 사람 인증됨"이라고 기록
-            UsernamePasswordAuthenticationToken authentication =
-                    new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-            SecurityContextHolder.getContext().setAuthentication(authentication);
+                String userId = jwtUtil.getUserId(token);
+                UserDetails userDetails = customUserDetailsService.loadUserByUsername(userId);
+
+                // 시큐리티 내부에 "이 사람 인증됨"이라고 기록
+                UsernamePasswordAuthenticationToken authentication =
+                        new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+            } catch (UnauthorizedException ignored) {
+
+            }
         }
         filterChain.doFilter(request, response);
     }

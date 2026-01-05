@@ -1,5 +1,6 @@
 package depth.main.seatnow.domain.auth.service;
 
+import depth.main.seatnow.domain.auth.dto.request.OwnerLoginRequest;
 import depth.main.seatnow.domain.auth.dto.response.AuthResponseDto;
 import depth.main.seatnow.domain.auth.dto.response.KakaoDTO;
 import depth.main.seatnow.domain.user.entity.User;
@@ -54,7 +55,7 @@ public class AuthService {
     /**
      * 사장님 로그인
      */
-    /*@Transactional
+    @Transactional
     public AuthResponseDto.TokenDto ownerLogin(OwnerLoginRequest request) {
         // 1. 이메일로 유저 찾기 (UserRepository 활용)
         User user = userRepository.findByEmail(request.getEmail())
@@ -72,7 +73,7 @@ public class AuthService {
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
                 .build();
-    }*/
+    }
 
     /**
      * 토큰 재발급

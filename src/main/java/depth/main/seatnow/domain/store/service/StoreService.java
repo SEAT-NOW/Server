@@ -3,6 +3,7 @@ package depth.main.seatnow.domain.store.service;
 import depth.main.seatnow.domain.store.dto.request.OperationRequest;
 import depth.main.seatnow.domain.store.dto.request.OwnerSignupRequest;
 import depth.main.seatnow.domain.store.dto.request.SpaceRequest;
+import depth.main.seatnow.domain.store.dto.response.SeatResponse;
 import depth.main.seatnow.domain.store.entity.operation.OpeningHour;
 import depth.main.seatnow.domain.store.entity.operation.RegularHoliday;
 import depth.main.seatnow.domain.store.entity.operation.TemporaryHoliday;
@@ -15,7 +16,10 @@ import depth.main.seatnow.domain.user.entity.User;
 import depth.main.seatnow.domain.user.entity.enums.Role;
 import depth.main.seatnow.domain.user.repository.UserRepository;
 import depth.main.seatnow.global.exception.custom.ConflictException;
+import depth.main.seatnow.global.exception.custom.NotFoundException;
+import depth.main.seatnow.global.exception.error.ErrorCode;
 import depth.main.seatnow.infrastructure.external.s3.S3UploadService;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -24,12 +28,11 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
-import static depth.main.seatnow.global.exception.error.ErrorCode.DUPLICATE_BUSINESS_NUMBER;
-import static depth.main.seatnow.global.exception.error.ErrorCode.DUPLICATE_EMAIL;
+import static depth.main.seatnow.global.exception.error.ErrorCode.*;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
+@org.springframework.transaction.annotation.Transactional(readOnly = true)
 public class StoreService {
     private final UserRepository userRepository;
     private final StoreRepository storeRepository;
@@ -147,5 +150,11 @@ public class StoreService {
         // Store 엔티티에 합산된 결과 저장
         store.initializeSeatInfo(totalSeats);
     }
+    @Transactional
+    public SeatResponse getStoreSeatStatus(Long storeId) {
+        Store store = storeRepository.findById(storeId)
+                .orElseThrow(() -> new NotFoundException(ErrorCode.STORE_NOT_FOUND));
 
+        return SeatResponse.from(store);
+    }
 }

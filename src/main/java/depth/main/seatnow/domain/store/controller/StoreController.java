@@ -1,6 +1,7 @@
 package depth.main.seatnow.domain.store.controller;
 
 import depth.main.seatnow.domain.store.dto.request.OwnerSignupRequest;
+import depth.main.seatnow.domain.store.dto.response.SeatResponse;
 import depth.main.seatnow.domain.store.service.StoreService;
 import depth.main.seatnow.global.common.ApiResponse;
 import depth.main.seatnow.global.exception.error.ErrorResponse;
@@ -96,6 +97,12 @@ public class StoreController {
                     Map.of("storeId", storeId),
                 "사장님 회원가입 및 매장 등록이 완료되었습니다."
         );
+    }
+    @Operation(summary = "실시간 좌석 현황 조회", description = "매장의 공간별/테이블별 이용 및 빈 좌석 현황을 조회합니다.")
+    @GetMapping("/{storeId}/seats")
+    public ApiResponse<SeatResponse> getStoreSeats(@PathVariable Long storeId) {
+        SeatResponse response = storeService.getStoreSeatStatus(storeId);
+        return ApiResponse.ok(response);
     }
 }
 

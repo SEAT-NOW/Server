@@ -36,7 +36,7 @@ public class StoreService {
     private final S3UploadService s3UploadService;
     private final PasswordEncoder passwordEncoder;
 
-    public void registerOwner(OwnerSignupRequest request, MultipartFile licenseImage, List<MultipartFile> storeImages) {
+    public Long registerOwner(OwnerSignupRequest request, MultipartFile licenseImage, List<MultipartFile> storeImages) {
         // 계정 중복 검증
         if (userRepository.existsByEmail(request.getAccount().getEmail())) {
             throw new ConflictException(DUPLICATE_EMAIL);
@@ -85,7 +85,9 @@ public class StoreService {
         }
 
         // 가게 저장
-        storeRepository.save(store);
+        Store saveStore = storeRepository.save(store);
+
+        return saveStore.getId();
     }
 
     private void uploadAndMapImages(List<MultipartFile> storeImages, Store store) {

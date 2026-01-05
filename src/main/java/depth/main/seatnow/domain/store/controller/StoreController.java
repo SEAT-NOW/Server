@@ -17,6 +17,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Map;
+
 @Tag(name = "매장/사장님 관리", description = "사장님 회원가입 및 매장 설정 관련 API")
 @RestController
 @RequestMapping("/api/v1/stores")
@@ -35,7 +37,7 @@ public class StoreController {
                             mediaType = "application/json",
                             examples = @ExampleObject(
                                     name = "성공 예시",
-                                    value = "{\"success\": true, \"data\": \"사장님 회원가입 및 매장 등록이 완료되었습니다.\", \"message\": null}"
+                                    value = "{\"success\": true, \"data\": {\"storeId\": 1}, \"message\": \"사장님 회원가입 및 매장 등록이 완료되었습니다.\"}"
                             )
                     )
             ),
@@ -74,7 +76,7 @@ public class StoreController {
             )
     })
     @PostMapping(value ="/owner/signup", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ApiResponse<String> signup(
+    public ApiResponse<Map<String, Long>> signup(
             @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     content = @Content(
                             mediaType = MediaType.APPLICATION_JSON_VALUE,
@@ -89,8 +91,11 @@ public class StoreController {
             @Parameter(description = "매장 사진 리스트")
             @RequestPart(value = "storeImages", required = false) List<MultipartFile> storeImages
     ) {
-        storeService.registerOwner(request, licenseImage, storeImages);
-        return ApiResponse.ok("사장님 회원가입 및 매장 등록이 완료되었습니다.");
+        Long storeId =  storeService.registerOwner(request, licenseImage, storeImages);
+        return ApiResponse.ok(
+                    Map.of("storeId", storeId),
+                "사장님 회원가입 및 매장 등록이 완료되었습니다."
+        );
     }
 }
 

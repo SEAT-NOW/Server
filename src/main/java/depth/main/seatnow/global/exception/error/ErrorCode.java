@@ -13,6 +13,9 @@ public enum ErrorCode {
 
     UNAUTHORIZED("4010", "인증이 필요합니다."),
     INVALID_TOKEN("4011", "잘못된 토큰입니다."),
+    EXPIRED_TOKEN("4012", "토큰이 만료되었습니다."),
+    EXPIRED_REFRESH_TOKEN("4013", "리프레시 토큰이 만료되었습니다."),
+    INVALID_REFRESH_TOKEN("4014", "리프레시 토큰이 유효하지 않습니다"),
 
     FORBIDDEN("4030", "접근 권한이 없습니다."),
 

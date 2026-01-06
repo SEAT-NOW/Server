@@ -143,7 +143,7 @@ public class AuthService {
     }
 
     private User findUser(String userId) {
-        return userRepository.findBySocialId(Long.parseLong(userId))
+        return userRepository.findById(Long.parseLong(userId))
                 .orElseThrow(() -> new NotFoundException(ErrorCode.NOT_FOUND));
     }
 }

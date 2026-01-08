@@ -5,6 +5,7 @@ import depth.main.seatnow.domain.store.dto.response.SeatResponse;
 import depth.main.seatnow.domain.store.service.StoreService;
 import depth.main.seatnow.global.common.ApiResponse;
 import depth.main.seatnow.global.exception.error.ErrorResponse;
+import depth.main.seatnow.global.security.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -14,6 +15,9 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -99,9 +103,13 @@ public class StoreController {
         );
     }
     @Operation(summary = "실시간 좌석 현황 조회", description = "매장의 공간별/테이블별 이용 및 빈 좌석 현황을 조회합니다.")
+    @PreAuthorize("hasRole('OWNER')")
     @GetMapping("/{storeId}/seats")
-    public ApiResponse<SeatResponse> getStoreSeats(@PathVariable Long storeId) {
-        SeatResponse response = storeService.getStoreSeatStatus(storeId);
+    public ApiResponse<SeatResponse> getStoreSeats(
+            @PathVariable Long storeId,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+
+        SeatResponse response = storeService.getStoreSeatStatus(storeId, userDetails);
         return ApiResponse.ok(response);
     }
 }

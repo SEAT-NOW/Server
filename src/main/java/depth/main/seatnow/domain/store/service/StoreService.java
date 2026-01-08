@@ -16,10 +16,11 @@ import depth.main.seatnow.domain.user.entity.User;
 import depth.main.seatnow.domain.user.entity.enums.Role;
 import depth.main.seatnow.domain.user.repository.UserRepository;
 import depth.main.seatnow.global.exception.custom.ConflictException;
+import depth.main.seatnow.global.exception.custom.ForbiddenException;
 import depth.main.seatnow.global.exception.custom.NotFoundException;
 import depth.main.seatnow.global.exception.error.ErrorCode;
+import depth.main.seatnow.global.security.CustomUserDetails;
 import depth.main.seatnow.infrastructure.external.s3.S3UploadService;
-import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -39,6 +40,7 @@ public class StoreService {
     private final S3UploadService s3UploadService;
     private final PasswordEncoder passwordEncoder;
 
+    @Transactional
     public Long registerOwner(OwnerSignupRequest request, MultipartFile licenseImage, List<MultipartFile> storeImages) {
         // 계정 중복 검증
         if (userRepository.existsByEmail(request.getAccount().getEmail())) {
@@ -91,6 +93,20 @@ public class StoreService {
         Store saveStore = storeRepository.save(store);
 
         return saveStore.getId();
+    }
+
+    @Transactional
+    public SeatResponse getStoreSeatStatus(Long storeId, CustomUserDetails userDetails) {
+        // 매장 조회
+        Store store = storeRepository.findById(storeId)
+                .orElseThrow(() -> new NotFoundException(ErrorCode.STORE_NOT_FOUND));
+
+        // 매장의 주인이 로그인한 사장님이 맞는지 확인!
+        if (!store.getUser().getId().equals(userDetails.getUserId())) {
+            throw new ForbiddenException(ErrorCode.FORBIDDEN);
+        }
+
+        return SeatResponse.from(store);
     }
 
     private void uploadAndMapImages(List<MultipartFile> storeImages, Store store) {
@@ -150,11 +166,5 @@ public class StoreService {
         // Store 엔티티에 합산된 결과 저장
         store.initializeSeatInfo(totalSeats);
     }
-    @Transactional
-    public SeatResponse getStoreSeatStatus(Long storeId) {
-        Store store = storeRepository.findById(storeId)
-                .orElseThrow(() -> new NotFoundException(ErrorCode.STORE_NOT_FOUND));
 
-        return SeatResponse.from(store);
-    }
 }

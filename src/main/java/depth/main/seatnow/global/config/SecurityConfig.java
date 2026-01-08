@@ -8,6 +8,7 @@ import depth.main.seatnow.global.util.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -34,7 +35,7 @@ public class SecurityConfig {
             "/api/v1/auth/verifications/**",
             "/api/v1/places/**",
             "/api/v1/images/upload",
-            "/api/v1/stores/**"
+            "/api/v1/stores/owner/signup"
     };
 
     @Bean
@@ -47,6 +48,7 @@ public class SecurityConfig {
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(WHITE_LIST).permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/stores/{storeId}/seats").hasRole("OWNER")
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(new JwtAuthenticationFilter(jwtUtil, customUserDetailsService),

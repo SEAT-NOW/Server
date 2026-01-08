@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -102,7 +103,44 @@ public class StoreController {
                 "사장님 회원가입 및 매장 등록이 완료되었습니다."
         );
     }
-    @Operation(summary = "실시간 좌석 현황 조회", description = "매장의 공간별/테이블별 이용 및 빈 좌석 현황을 조회합니다.")
+    @Operation(
+            summary = "실시간 좌석 현황 조회",
+            description = "매장의 공간별/테이블별 이용 및 빈 좌석 현황을 조회합니다."
+    )
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "200",
+                    description = "조회 성공"
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "403",
+                    description = "권한 없음",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = {
+                                    @ExampleObject(
+                                            name = "본인 매장 아님",
+                                            summary = "FORBIDDEN",
+                                            value = "{\"code\": \"4030\", \"message\": \"접근 권한이 없습니다.\", \"detail\": null}"
+                                    )
+                            }
+                    )
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "404",
+                    description = "매장 찾을 수 없음",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    name = "매장 존재하지 않음",
+                                    summary = "NOT_FOUND",
+                                    value = "{\"code\": \"4040\", \"message\": \"존재하지 않는 매장입니다.\", \"detail\": null}"
+                            )
+                    )
+            )
+    })
     @PreAuthorize("hasRole('OWNER')")
     @GetMapping("/{storeId}/seats")
     public ApiResponse<SeatResponse> getStoreSeats(

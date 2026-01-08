@@ -2,6 +2,7 @@ package depth.main.seatnow.global.security.token;
 
 import depth.main.seatnow.domain.user.entity.User;
 import depth.main.seatnow.domain.user.repository.UserRepository;
+import depth.main.seatnow.global.security.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -19,10 +20,12 @@ public class CustomUserDetailsService implements UserDetailsService {
         User user = userRepository.findById(Long.parseLong(userId))
                 .orElseThrow(() -> new UsernameNotFoundException("사용자 정보를 찾을 수 없습니다."));
 
-        return org.springframework.security.core.userdetails.User.builder()
-                .username(String.valueOf(user.getId()))
-                .password(user.getPassword() != null ? user.getPassword() : "")
-                .roles(user.getRole().name()) // ROLE_OWNER 또는 ROLE_USER
-                .build();
+//        return org.springframework.security.core.userdetails.User.builder()
+//                .username(String.valueOf(user.getId()))
+//                .password(user.getPassword() != null ? user.getPassword() : "")
+//                .roles(user.getRole().name()) // ROLE_OWNER 또는 ROLE_USER
+//                .build();
+
+        return new CustomUserDetails(user);
     }
 }

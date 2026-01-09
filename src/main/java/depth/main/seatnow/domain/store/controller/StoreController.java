@@ -162,17 +162,17 @@ public class StoreController {
             @RequestParam(required = false) String keyword,
 
             @Parameter(description = "위도")
-            @RequestParam(required = false) Double latitude,
+            @RequestParam(required = false) Double lat,
 
             @Parameter(description = "경도")
-            @RequestParam(required = false) Double longitude,
+            @RequestParam(required = false) Double lng,
 
             @Parameter(description = "검색 반경 (km 단위, 기본값 1.0)")
             @RequestParam(defaultValue = "1.0") Double radius,
 
             @Parameter(description = "인원수 필터 (0: 전체, N: N석 이상 남은 곳")
             @RequestParam(defaultValue = "0") Integer headCount) {
-        List<StoreListResponse> response = storeService.searchStores(keyword, latitude, longitude, radius, headCount);
+        List<StoreListResponse> response = storeService.searchStores(keyword, lat, lng, radius, headCount);
         return ApiResponse.ok(response, "조회에 성공하였습니다.");
     }
 }

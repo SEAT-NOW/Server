@@ -17,6 +17,6 @@ public interface StoreRepository extends JpaRepository<Store, Long> {
     List<Store> searchByLocation(@Param("lat") double lat, @Param("lng") double lng, @Param("radius") double radius);
 
     // 키워드 검색
-    @Query("SELECT s FROM Store s WHERE s.storeName LIKE %:keyword% OR s.address LIKE %:keyword% ORDER BY s.modifiedAt DESC")
-    List<Store> searchByKeyword(String nameKeyword);
+    @Query("SELECT s FROM Store s WHERE s.storeName LIKE CONCAT('%', :keyword, '%') OR s.address LIKE CONCAT('%', :keyword, '%') ORDER BY s.modifiedAt DESC")
+    List<Store> searchByKeyword(@Param("keyword") String keyword);
 }

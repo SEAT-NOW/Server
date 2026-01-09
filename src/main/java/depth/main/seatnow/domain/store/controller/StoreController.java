@@ -154,7 +154,54 @@ public class StoreController {
         return ApiResponse.ok(response);
     }
 
-    @Operation(summary = "실시간 좌석 현황 업데이트", description = "사장님이 매장의 좌석 이용 현황을 직접 수정합니다.")
+    @Operation(
+            summary = "실시간 좌석 현황 업데이트",
+            description = "사장님이 매장의 좌석 이용 현황을 직접 수정합니다."
+    )
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "200",
+                    description = "업데이트 성공",
+                    content = @Content(schema = @Schema(implementation = SpaceSeatUpdateResponse.class))
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "400",
+                    description = "잘못된 요청 (음수 입력 또는 전체 좌석 수 초과)",
+                    content = @Content(
+                            mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            examples = {
+                                    @ExampleObject(
+                                            name = "좌석 수 초과",
+                                            summary = "INVALID_TABLE_COUNT",
+                                            value = "{\"code\": \"4004\", \"message\": \"사용 중인 테이블 수는 전체 테이블 수를 초과할 수 없습니다.\", \"detail\": null}"
+                                    ),
+                                    @ExampleObject(
+                                            name = "음수 입력",
+                                            summary = "VALIDATION_ERROR",
+                                            value = "{\"code\": \"4000\", \"message\": \"잘못된 요청입니다.\", \"detail\": \"테이블 수는 0개 이상이어야 합니다.\"}"
+                                    )
+                            }
+                    )
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "403",
+                    description = "권한 없음 (본인 매장이 아니거나 OWNER 권한 없음)",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "404",
+                    description = "존재하지 않는 리소스 (매장, 구역, 테이블 ID 오류)",
+                    content = @Content(
+                            mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            examples = {
+                                    @ExampleObject(name = "매장 없음", value = "{\"code\": \"4041\", \"message\": \"존재하지 않는 매장입니다.\", \"detail\": null}"),
+                                    @ExampleObject(name = "테이블 없음", value = "{\"code\": \"4042\", \"message\": \"존재하지 않는 테이블입니다.\", \"detail\": null}"),
+                                    @ExampleObject(name = "공간 없음", value = "{\"code\": \"4043\", \"message\": \"존재하지 않는 공간입니다.\", \"detail\": null}")
+                            }
+                    )
+            )
+    })
+
     @PreAuthorize("hasRole('OWNER')")
     @PatchMapping("/seats")
     public ApiResponse<SpaceSeatUpdateResponse> updateStoreSeats(

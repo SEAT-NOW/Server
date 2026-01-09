@@ -1,7 +1,10 @@
 package depth.main.seatnow.domain.store.controller;
 
 import depth.main.seatnow.domain.store.dto.request.OwnerSignupRequest;
+import depth.main.seatnow.domain.store.dto.request.SpaceSeatUpdateRequest;
 import depth.main.seatnow.domain.store.dto.response.SeatResponse;
+import depth.main.seatnow.domain.store.dto.response.SpaceSeatUpdateResponse;
+import depth.main.seatnow.domain.store.service.SeatService;
 import depth.main.seatnow.domain.store.service.StoreService;
 import depth.main.seatnow.global.common.ApiResponse;
 import depth.main.seatnow.global.exception.error.ErrorResponse;
@@ -18,7 +21,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -31,6 +33,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class StoreController {
     private final StoreService storeService;
+    private final SeatService seatService;
     @Operation(
             summary = "사장님 회원가입 및 매장 등록",
             description = "계정 정보, 사업자 정보, 매장 레이아웃, 운영 시간을 한 번에 등록합니다. (Multipart Form Data 방식)"
@@ -149,6 +152,17 @@ public class StoreController {
 
         SeatResponse response = storeService.getStoreSeatStatus(storeId, userDetails);
         return ApiResponse.ok(response);
+    }
+
+    @Operation(summary = "실시간 좌석 현황 업데이트", description = "사장님이 매장의 좌석 이용 현황을 직접 수정합니다.")
+    @PreAuthorize("hasRole('OWNER')")
+    @PatchMapping("/seats")
+    public ApiResponse<SpaceSeatUpdateResponse> updateStoreSeats(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestBody SpaceSeatUpdateRequest request) {
+
+        SpaceSeatUpdateResponse response = seatService.updateAllSeats(userDetails, request);
+        return ApiResponse.ok(response, "좌석 현황이 성공적으로 업데이트되었습니다.");
     }
 }
 

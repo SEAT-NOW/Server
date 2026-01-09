@@ -116,4 +116,7 @@ public class Store extends BaseTimeEntity {
         this.statusTag = SeatStatus.FREE;     // 0%이므로 초기 상태는 '여유'
     }
 
+    public void updateUsedSeatCount(int totalUsedSeats) {
+        this.usedSeatCount = totalUsedSeats;
+    }
 }

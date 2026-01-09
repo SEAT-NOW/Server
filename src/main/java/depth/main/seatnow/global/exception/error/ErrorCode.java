@@ -22,6 +22,8 @@ public enum ErrorCode {
 
     NOT_FOUND(HttpStatus.NOT_FOUND,"4040", "존재하지 않는 사용자입니다."),
     STORE_NOT_FOUND(HttpStatus.NOT_FOUND,"4041", "존재하지 않는 매장입니다."),
+    TABLE_NOT_FOUND(HttpStatus.NOT_FOUND,"4042", "매장에 존재하지 않는 테이블입니다."),
+    SPACE_NOT_FOUND(HttpStatus.NOT_FOUND,"4043", "매장에 존재하지 않는 공간입니다."),
 
     CONFLICT(HttpStatus.CONFLICT, "4090", "이미 존재하는 리소스입니다."),
     DUPLICATE_EMAIL(HttpStatus.CONFLICT, "4091", "이미 가입된 이메일입니다."),

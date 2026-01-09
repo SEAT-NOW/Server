@@ -4,6 +4,7 @@ import depth.main.seatnow.domain.store.dto.request.OperationRequest;
 import depth.main.seatnow.domain.store.dto.request.OwnerSignupRequest;
 import depth.main.seatnow.domain.store.dto.request.SpaceRequest;
 import depth.main.seatnow.domain.store.dto.response.SeatResponse;
+import depth.main.seatnow.domain.store.dto.response.StoreListResponse;
 import depth.main.seatnow.domain.store.entity.operation.OpeningHour;
 import depth.main.seatnow.domain.store.entity.operation.RegularHoliday;
 import depth.main.seatnow.domain.store.entity.operation.TemporaryHoliday;
@@ -27,6 +28,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static depth.main.seatnow.global.exception.error.ErrorCode.*;
@@ -167,4 +169,37 @@ public class StoreService {
         store.initializeSeatInfo(totalSeats);
     }
 
+    public List<StoreListResponse> searchStores(String keyword, Double lat, Double lng, Double radius, Integer headCount) {
+        List<Store> stores;
+
+        // 목록 조회
+        if (lat != null && lng != null) {
+            // 지도 중심 기준 반경 검색
+            stores = storeRepository.searchByLocation(lat, lng, radius);
+        } else if (keyword != null && !keyword.isBlank()) {
+            // 키워드 검색
+            stores = storeRepository.searchByKeyword(keyword);
+        } else {
+            return List.of();
+        }
+
+        // 인원수 필터링
+        // headCount가 1 이상일 때만 남은 좌석 수 비교
+        if (headCount != null && headCount > 0) {
+            List<Store> filteredStores = new ArrayList<>();
+            for (Store store : stores) {
+                if (store.getAvailableSeatCount() >= headCount) {
+                    filteredStores.add(store);
+                }
+            }
+            stores = filteredStores;
+        }
+
+        List<StoreListResponse> responseList = new ArrayList<>();
+        for (Store store : stores) {
+            responseList.add(StoreListResponse.from(store));
+        }
+
+        return responseList;
+    }
 }

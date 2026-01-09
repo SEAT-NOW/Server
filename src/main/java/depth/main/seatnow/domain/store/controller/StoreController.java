@@ -2,6 +2,7 @@ package depth.main.seatnow.domain.store.controller;
 
 import depth.main.seatnow.domain.store.dto.request.OwnerSignupRequest;
 import depth.main.seatnow.domain.store.dto.response.SeatResponse;
+import depth.main.seatnow.domain.store.dto.response.StoreListResponse;
 import depth.main.seatnow.domain.store.service.StoreService;
 import depth.main.seatnow.global.common.ApiResponse;
 import depth.main.seatnow.global.exception.error.ErrorResponse;
@@ -149,6 +150,15 @@ public class StoreController {
 
         SeatResponse response = storeService.getStoreSeatStatus(storeId, userDetails);
         return ApiResponse.ok(response);
+    }
+
+    @GetMapping("/search")
+    public ApiResponse<List<StoreListResponse>> searchStores(
+            @RequestParam(required = false) String keyword, @RequestParam(required = false) Double lat,
+            @RequestParam(required = false) Double lng, @RequestParam(defaultValue = "1.0") Double radius,
+            @RequestParam(defaultValue = "0") Integer headCount) {
+        List<StoreListResponse> response = storeService.searchStores(keyword, lat, lng, radius, headCount);
+        return ApiResponse.ok(response, "조회에 성공하였습니다.");
     }
 }
 

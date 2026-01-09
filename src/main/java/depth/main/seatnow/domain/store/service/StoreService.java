@@ -3,6 +3,7 @@ package depth.main.seatnow.domain.store.service;
 import depth.main.seatnow.domain.store.dto.request.OperationRequest;
 import depth.main.seatnow.domain.store.dto.request.OwnerSignupRequest;
 import depth.main.seatnow.domain.store.dto.request.SpaceRequest;
+import depth.main.seatnow.domain.store.dto.response.SeatResponse;
 import depth.main.seatnow.domain.store.entity.operation.OpeningHour;
 import depth.main.seatnow.domain.store.entity.operation.RegularHoliday;
 import depth.main.seatnow.domain.store.entity.operation.TemporaryHoliday;
@@ -15,6 +16,10 @@ import depth.main.seatnow.domain.user.entity.User;
 import depth.main.seatnow.domain.user.entity.enums.Role;
 import depth.main.seatnow.domain.user.repository.UserRepository;
 import depth.main.seatnow.global.exception.custom.ConflictException;
+import depth.main.seatnow.global.exception.custom.ForbiddenException;
+import depth.main.seatnow.global.exception.custom.NotFoundException;
+import depth.main.seatnow.global.exception.error.ErrorCode;
+import depth.main.seatnow.global.security.CustomUserDetails;
 import depth.main.seatnow.infrastructure.external.s3.S3UploadService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -24,19 +29,19 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
-import static depth.main.seatnow.global.exception.error.ErrorCode.DUPLICATE_BUSINESS_NUMBER;
-import static depth.main.seatnow.global.exception.error.ErrorCode.DUPLICATE_EMAIL;
+import static depth.main.seatnow.global.exception.error.ErrorCode.*;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
+@org.springframework.transaction.annotation.Transactional(readOnly = true)
 public class StoreService {
     private final UserRepository userRepository;
     private final StoreRepository storeRepository;
     private final S3UploadService s3UploadService;
     private final PasswordEncoder passwordEncoder;
 
-    public void registerOwner(OwnerSignupRequest request, MultipartFile licenseImage, List<MultipartFile> storeImages) {
+    @Transactional
+    public Long registerOwner(OwnerSignupRequest request, MultipartFile licenseImage, List<MultipartFile> storeImages) {
         // 계정 중복 검증
         if (userRepository.existsByEmail(request.getAccount().getEmail())) {
             throw new ConflictException(DUPLICATE_EMAIL);
@@ -85,7 +90,23 @@ public class StoreService {
         }
 
         // 가게 저장
-        storeRepository.save(store);
+        Store saveStore = storeRepository.save(store);
+
+        return saveStore.getId();
+    }
+
+    @Transactional
+    public SeatResponse getStoreSeatStatus(Long storeId, CustomUserDetails userDetails) {
+        // 매장 조회
+        Store store = storeRepository.findById(storeId)
+                .orElseThrow(() -> new NotFoundException(ErrorCode.STORE_NOT_FOUND));
+
+        // 매장의 주인이 로그인한 사장님이 맞는지 확인!
+        if (!store.getUser().getId().equals(userDetails.getUserId())) {
+            throw new ForbiddenException(ErrorCode.FORBIDDEN);
+        }
+
+        return SeatResponse.from(store);
     }
 
     private void uploadAndMapImages(List<MultipartFile> storeImages, Store store) {

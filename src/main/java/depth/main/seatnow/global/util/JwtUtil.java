@@ -1,9 +1,10 @@
 package depth.main.seatnow.global.util;
 
+import depth.main.seatnow.global.exception.custom.UnauthorizedException;
+import depth.main.seatnow.global.exception.error.ErrorCode;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -11,7 +12,6 @@ import java.security.Key;
 import java.util.Date;
 
 @Component
-@Slf4j
 public class JwtUtil {
 
     private final Key key;
@@ -24,8 +24,8 @@ public class JwtUtil {
 
         byte[] keyBytes = Decoders.BASE64.decode(secretKey);
         this.key = Keys.hmacShaKeyFor(keyBytes);
-        this.accessTokenValiditySeconds = accessTokenValidityTime * 10000;
-        this.refreshTokenValiditySeconds = refreshTokenValidityTime * 10000;
+        this.accessTokenValiditySeconds = accessTokenValidityTime * 1000;
+        this.refreshTokenValiditySeconds = refreshTokenValidityTime * 1000;
     }
 
     public String createAccessToken(String userId, String role) {
@@ -50,26 +50,26 @@ public class JwtUtil {
     }
 
     //토큰 유효성 검증(token 재발급 받을때)
-    public boolean validateToken(String token) {
+    public void validateToken(String token) {
         try {
             Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
-            return true;
-        } catch (SecurityException | MalformedJwtException e) {
-            log.info("Invalid JWT signature, 유효하지 않는 JWT 서명 입니다.");
+        } catch (SecurityException | UnsupportedJwtException | MalformedJwtException e) {
+            throw new UnauthorizedException(ErrorCode.INVALID_TOKEN);
         } catch (ExpiredJwtException e) {
-            log.info("Expired JWT token, 만료된 JWT token 입니다.");
-        } catch (UnsupportedJwtException e) {
-            log.info("Unsupported JWT token, 지원되지 않는 JWT 토큰 입니다.");
-        } catch (IllegalArgumentException e) {
-            log.info("JWT claims is empty, 잘못된 JWT 토큰 입니다.");
+            throw new UnauthorizedException(ErrorCode.EXPIRED_TOKEN);
         }
-        return false;
     }
 
     public String getUserId(String token) {
-        return Jwts.parserBuilder().setSigningKey(key).build()
-                .parseClaimsJws(token)
-                .getBody()
-                .getSubject();
+        try {
+            return Jwts.parserBuilder().setSigningKey(key).build()
+                    .parseClaimsJws(token)
+                    .getBody()
+                    .getSubject();
+        } catch (ExpiredJwtException e) {
+            return e.getClaims().getSubject();
+        } catch (Exception e) {
+            throw new UnauthorizedException(ErrorCode.INVALID_TOKEN);
+        }
     }
 }

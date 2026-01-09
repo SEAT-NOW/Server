@@ -7,6 +7,7 @@ import depth.main.seatnow.domain.store.entity.seat.TableConfig;
 import depth.main.seatnow.domain.store.entity.store.Store;
 import depth.main.seatnow.domain.store.repository.StoreRepository;
 import depth.main.seatnow.domain.store.repository.TableConfigRepository;
+import depth.main.seatnow.global.exception.custom.BadRequestException;
 import depth.main.seatnow.global.exception.custom.ForbiddenException;
 import depth.main.seatnow.global.exception.custom.NotFoundException;
 import depth.main.seatnow.global.exception.error.ErrorCode;
@@ -54,6 +55,10 @@ public class SeatService {
                 // 2. 찾은 테이블이 속한 공간이 요청에서의 공간ID랑 같은지 확인
                 if (!table.getSpace().getId().equals(spaceUpdate.getSpaceId())) {
                     throw new ForbiddenException(ErrorCode.FORBIDDEN);
+                }
+
+                if (tableUpdate.getUsedCount() > table.getTableCount()) {
+                    throw new BadRequestException(ErrorCode.INVALID_TABLE_COUNT);
                 }
 
                 table.updateUsedCount(tableUpdate.getUsedCount());

@@ -159,7 +159,7 @@ public class StoreController {
     @PatchMapping("/seats")
     public ApiResponse<SpaceSeatUpdateResponse> updateStoreSeats(
             @AuthenticationPrincipal CustomUserDetails userDetails,
-            @RequestBody SpaceSeatUpdateRequest request) {
+            @RequestBody @Valid SpaceSeatUpdateRequest request) {
 
         SpaceSeatUpdateResponse response = seatService.updateAllSeats(userDetails, request);
         return ApiResponse.ok(response, "좌석 현황이 성공적으로 업데이트되었습니다.");

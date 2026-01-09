@@ -49,15 +49,7 @@ public class GlobalExceptionHandler {
                         .build());
     }
 
-    // ErrorCode → HttpStatus 매핑
     private HttpStatus getHttpStatus(ErrorCode code) {
-        return switch (code) {
-            case INVALID_REQUEST -> HttpStatus.BAD_REQUEST;
-            case UNAUTHORIZED -> HttpStatus.UNAUTHORIZED;
-            case FORBIDDEN -> HttpStatus.FORBIDDEN;
-            case NOT_FOUND -> HttpStatus.NOT_FOUND;
-            case CONFLICT -> HttpStatus.CONFLICT;
-            default -> HttpStatus.INTERNAL_SERVER_ERROR;
-        };
+        return code.getHttpStatus();
     }
 }

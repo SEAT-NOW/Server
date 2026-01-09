@@ -1,5 +1,8 @@
 package depth.main.seatnow.domain.store.entity.seat.enums;
 
+import lombok.Getter;
+
+@Getter
 public enum SeatStatus {
     FREE("여유"),      // 0 ~ 33%
     NORMAL("보통"),    // 34 ~ 66%

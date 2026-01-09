@@ -19,7 +19,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -152,12 +151,28 @@ public class StoreController {
         return ApiResponse.ok(response);
     }
 
+    @Operation(
+            summary = "술집 검색 및 지도 조회",
+            description = "홈 화면, N명 자리 찾기, 키워드 검색 API" +
+                    "headCount가 1이상이면 좌석 수로 필터링, 결과는 최신 업데이트 순으로 정렬"
+    )
     @GetMapping("/search")
     public ApiResponse<List<StoreListResponse>> searchStores(
-            @RequestParam(required = false) String keyword, @RequestParam(required = false) Double lat,
-            @RequestParam(required = false) Double lng, @RequestParam(defaultValue = "1.0") Double radius,
+            @Parameter(description = "검색어 (가게명 or 주소)")
+            @RequestParam(required = false) String keyword,
+
+            @Parameter(description = "위도")
+            @RequestParam(required = false) Double latitude,
+
+            @Parameter(description = "경도")
+            @RequestParam(required = false) Double longitude,
+
+            @Parameter(description = "검색 반경 (km 단위, 기본값 1.0)")
+            @RequestParam(defaultValue = "1.0") Double radius,
+
+            @Parameter(description = "인원수 필터 (0: 전체, N: N석 이상 남은 곳")
             @RequestParam(defaultValue = "0") Integer headCount) {
-        List<StoreListResponse> response = storeService.searchStores(keyword, lat, lng, radius, headCount);
+        List<StoreListResponse> response = storeService.searchStores(keyword, latitude, longitude, radius, headCount);
         return ApiResponse.ok(response, "조회에 성공하였습니다.");
     }
 }

@@ -14,6 +14,9 @@ public class PlaceSearchItemResponse {
     @Schema(description = "도로명 주소", example = "서울특별시 강남구 테헤란로 123")
     private String roadAddress;
 
+    @Schema(description = "읍면동 단위 지역명 (화면 설계서의 '읍면동' 표시용)", example = "역북동")
+    private String neighborhood;
+
     @Schema(description = "경도 (Longitude/x)", example = "127.027610")
     private Double lng;
 

@@ -41,6 +41,9 @@ public class Store extends BaseTimeEntity {
     private String address; // 주소
 
     @Column(nullable = false)
+    private String neighborhood; //읍면동 단위 지역명 (예: 역북동, 서교동)
+
+    @Column(nullable = false)
     private Double latitude; // 위도
 
     @Column(nullable = false)

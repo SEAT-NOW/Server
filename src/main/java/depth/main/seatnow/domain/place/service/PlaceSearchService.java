@@ -18,13 +18,36 @@ public class PlaceSearchService {
         if (res.getDocuments() == null) return List.of();
 
         return res.getDocuments().stream()
-                .map(doc -> PlaceSearchItemResponse.builder()
-                        .name(doc.getPlaceName())
-                        .roadAddress(doc.getRoadAddressName())
-                        .lng(parseDoubleOrNull(doc.getX())) // x=경도
-                        .lat(parseDoubleOrNull(doc.getY())) // y=위도
-                        .build())
-                // 유효하지 않은 데이터 필터링
+                .map(doc -> {
+                    String depth3 = "";
+
+                    // 1. 상세 객체의 region_3depth_name 확인
+                    if (doc.getAddress() != null && doc.getAddress().getRegion3DepthName() != null
+                            && !doc.getAddress().getRegion3DepthName().isBlank()) {
+                        depth3 = doc.getAddress().getRegion3DepthName();
+                    }
+                    // 2. 상세 객체가 없거나 부족할 때 문자열 파싱
+                    else if (doc.getAddressName() != null && !doc.getAddressName().isBlank()) {
+                        String[] parts = doc.getAddressName().split(" ");
+
+                        if (parts.length >= 3) {
+                            // 만약 index 2가 '구'로 끝난다면 '동'은 index 3에 있음
+                            if (parts[2].endsWith("구") && parts.length >= 4) {
+                                depth3 = parts[3];
+                            } else {
+                                depth3 = parts[2];
+                            }
+                        }
+                    }
+
+                    return PlaceSearchItemResponse.builder()
+                            .name(doc.getPlaceName())
+                            .roadAddress(doc.getRoadAddressName())
+                            .neighborhood(depth3)
+                            .lng(parseDoubleOrNull(doc.getX()))
+                            .lat(parseDoubleOrNull(doc.getY()))
+                            .build();
+                })
                 .filter(item -> item.getRoadAddress() != null && !item.getRoadAddress().isBlank())
                 .filter(item -> item.getLat() != null && item.getLng() != null)
                 .toList();

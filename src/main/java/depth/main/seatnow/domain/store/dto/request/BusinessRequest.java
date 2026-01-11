@@ -28,6 +28,10 @@ public class BusinessRequest {
     @NotBlank(message = "매장 주소는 필수입니다.")
     private String address;
 
+    @Schema(description = "읍면동 단위 지역명", example = "역북동")
+    @NotBlank(message = "지역명(동)은 필수입니다.")
+    private String neighborhood;
+
     @Schema(description = "매장 위도", example = "127.027")
     @NotNull(message = "매장 위도는 필수입니다.")
     private Double latitude; // 위도

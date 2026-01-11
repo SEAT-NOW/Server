@@ -73,6 +73,7 @@ public class StoreService {
                 .businessNumber(request.getBusiness().getBusinessNumber())
                 .storeName(request.getBusiness().getStoreName())
                 .address(request.getBusiness().getAddress())
+                .neighborhood(request.getBusiness().getNeighborhood())
                 .latitude(request.getBusiness().getLatitude())
                 .longitude(request.getBusiness().getLongitude())
                 .universityNames(request.getBusiness().getUniversityNames())

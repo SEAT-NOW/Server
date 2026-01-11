@@ -21,12 +21,26 @@ public class KakaoKeywordSearchResponse {
         @JsonProperty("road_address_name")
         private String roadAddressName;
 
+        @JsonProperty("address_name")
+        private String addressName;
+
+        @JsonProperty("address")
+        private Address address;
+
         // 카카오: x=경도(lng), y=위도(lat)
         @JsonProperty("x")
         private String x;
 
         @JsonProperty("y")
         private String y;
+
+        @Getter
+        @JsonIgnoreProperties(ignoreUnknown = true)
+        public static class Address {
+            @JsonProperty("region_3depth_name")
+            private String region3DepthName;
+
+        }
     }
 
 }

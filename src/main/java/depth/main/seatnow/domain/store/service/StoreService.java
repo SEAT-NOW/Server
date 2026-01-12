@@ -22,10 +22,10 @@ import depth.main.seatnow.global.exception.custom.NotFoundException;
 import depth.main.seatnow.global.exception.error.ErrorCode;
 import depth.main.seatnow.global.security.CustomUserDetails;
 import depth.main.seatnow.infrastructure.external.s3.S3UploadService;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
@@ -36,7 +36,7 @@ import static depth.main.seatnow.global.exception.error.ErrorCode.*;
 
 @Service
 @RequiredArgsConstructor
-@org.springframework.transaction.annotation.Transactional(readOnly = true)
+@Transactional(readOnly = true)
 public class StoreService {
     private final UserRepository userRepository;
     private final StoreRepository storeRepository;

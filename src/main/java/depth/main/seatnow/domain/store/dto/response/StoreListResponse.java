@@ -20,8 +20,9 @@ public class StoreListResponse {
     private String seatStatus;
     private String mainImageUrl;
     private LocalDateTime updatedAt;
+    private Double distance;
 
-    public static StoreListResponse from(Store store) {
+    public static StoreListResponse from(Store store, Double distance) {
         String imageUrl = store.getImages().stream()
                 .filter(StoreImage::isMain)
                 .findFirst()
@@ -39,6 +40,7 @@ public class StoreListResponse {
                 .seatStatus(store.getStatusTag().name())
                 .mainImageUrl(imageUrl)
                 .updatedAt(store.getModifiedAt())
+                .distance(distance)
                 .build();
     }
 }

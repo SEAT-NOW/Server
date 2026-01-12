@@ -174,12 +174,12 @@ public class StoreService {
         List<Store> stores;
 
         // 목록 조회
-        if (lat != null && lng != null) {
-            // 지도 중심 기준 반경 검색
-            stores = storeRepository.searchByLocation(lat, lng, radius);
-        } else if (keyword != null && !keyword.isBlank()) {
+        if (keyword != null && !keyword.isBlank()) {
             // 키워드 검색
             stores = storeRepository.searchByKeyword(keyword);
+        } else if (lat != null && lng != null) {
+            // 키워드가 없을 때만 위치 기반 반경 검색
+            stores = storeRepository.searchByLocation(lat, lng, radius);
         } else {
             return List.of();
         }
@@ -198,9 +198,30 @@ public class StoreService {
 
         List<StoreListResponse> responseList = new ArrayList<>();
         for (Store store : stores) {
-            responseList.add(StoreListResponse.from(store));
+            Double distance = null;
+
+            if (lat != null && lng != null) {
+                distance = calculateDistance(lat, lng, store.getLatitude(), store.getLongitude());
+            }
+
+            responseList.add(StoreListResponse.from(store, distance));
         }
 
         return responseList;
+    }
+
+    private double calculateDistance(double lat1, double lon1, double lat2, double lon2) {
+        final int R = 6371; // 지구의 반지름 (km)
+
+        double latDistance = Math.toRadians(lat2 - lat1);
+        double lonDistance = Math.toRadians(lon2 - lon1);
+
+        double a = Math.sin(latDistance / 2) * Math.sin(latDistance / 2)
+                + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2))
+                * Math.sin(lonDistance / 2) * Math.sin(lonDistance / 2);
+
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+        return R * c * 1000; // km를 m로 변환
     }
 }

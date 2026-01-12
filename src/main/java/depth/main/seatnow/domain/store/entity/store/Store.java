@@ -2,6 +2,7 @@ package depth.main.seatnow.domain.store.entity.store;
 
 import depth.main.seatnow.domain.store.entity.menu.MenuCategory;
 import depth.main.seatnow.domain.store.entity.operation.OpeningHour;
+import depth.main.seatnow.domain.store.entity.operation.OperationStatus;
 import depth.main.seatnow.domain.store.entity.operation.RegularHoliday;
 import depth.main.seatnow.domain.store.entity.operation.TemporaryHoliday;
 import depth.main.seatnow.domain.store.entity.seat.Space;
@@ -11,6 +12,10 @@ import depth.main.seatnow.global.common.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -73,6 +78,9 @@ public class Store extends BaseTimeEntity {
     @Column(nullable = false)
     private SeatStatus statusTag; // 여유, 보통, 혼잡, 만석
 
+    @Enumerated(EnumType.STRING)
+    private OperationStatus operationStatus; // 영업중, 곧 영업종료, 영업종료
+
     @Builder.Default
     @OneToMany(mappedBy = "store", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<StoreImage> images = new ArrayList<>();
@@ -117,6 +125,64 @@ public class Store extends BaseTimeEntity {
         this.totalSeatCount = totalSeats;     // 계산된 전체 좌석 수
         this.usedSeatCount = 0;               // 초기 가입 시 사용 중인 좌석은 0개
         this.statusTag = SeatStatus.FREE;     // 0%이므로 초기 상태는 '여유'
+    }
+
+    public void updateOperationStatus(LocalDateTime now) {
+        OperationStatus status = OperationStatus.CLOSED;
+
+        // 현재 날짜와 어제 날짜를 구분
+        LocalDate todayDate = now.toLocalDate();
+        LocalDate yesterdayDate = todayDate.minusDays(1);
+
+        // 현재 요일과 어제 요일을 구함
+        DayOfWeek todayDay = now.getDayOfWeek();
+        DayOfWeek yesterdayDay = todayDay.minus(1);
+
+        for (OpeningHour hour : this.openingHours) {
+            LocalDateTime startDateTime = null;
+            LocalDateTime endDateTime = null;
+
+            if (hour.getDayOfWeek() == todayDay) {
+                LocalTime start = hour.getStartTime();
+                LocalTime end = hour.getEndTime();
+
+                // 영업 시작 시간 설정
+                startDateTime = LocalDateTime.of(todayDate, start);
+
+                if (end.isBefore(start)) {
+                    // 자정을 넘겨 내일까지 영업하는 경우
+                    endDateTime = LocalDateTime.of(todayDate.plusDays(1), end);
+                } else {
+                    // 오늘 안에 영업이 끝나는 경우
+                    endDateTime = LocalDateTime.of(todayDate, end);
+                }
+            } else if (hour.getDayOfWeek() == yesterdayDay) {
+                LocalTime start = hour.getStartTime();
+                LocalTime end = hour.getEndTime();
+
+                // 어제 영업이 자정을 넘긴 경우만 체크
+                if (end.isBefore(start)) {
+                    startDateTime = LocalDateTime.of(yesterdayDate, start);
+                    endDateTime = LocalDateTime.of(todayDate, end);
+                }
+            }
+
+            if (startDateTime != null) {
+                if ((now.isEqual(startDateTime) || now.isAfter(startDateTime)) && now.isBefore(endDateTime)) {
+                    status = OperationStatus.OPEN;
+
+                    // 마감 1시간 전인지 확인
+                    long minutesUntilClose = java.time.temporal.ChronoUnit.MINUTES.between(now, endDateTime);
+                    if (minutesUntilClose <= 60) {
+                        status = OperationStatus.CLOSING_SOON;
+                    }
+
+                    break;
+                }
+            }
+        }
+
+        this.operationStatus = status;
     }
 
 }

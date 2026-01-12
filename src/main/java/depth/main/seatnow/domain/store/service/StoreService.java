@@ -28,6 +28,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -170,6 +171,7 @@ public class StoreService {
         store.initializeSeatInfo(totalSeats);
     }
 
+    @Transactional
     public List<StoreListResponse> searchStores(String keyword, Double lat, Double lng, Double radius, Integer headCount) {
         List<Store> stores;
 
@@ -197,14 +199,18 @@ public class StoreService {
         }
 
         List<StoreListResponse> responseList = new ArrayList<>();
+        LocalDateTime now = LocalDateTime.now();
+
         for (Store store : stores) {
-            Double distance = null;
+            String distanceStr = null;
+            store.updateOperationStatus(now);
 
             if (lat != null && lng != null) {
-                distance = calculateDistance(lat, lng, store.getLatitude(), store.getLongitude());
+                double distanceMeters = calculateDistance(lat, lng, store.getLatitude(), store.getLongitude());
+                distanceStr = formatDistance(distanceMeters);
             }
 
-            responseList.add(StoreListResponse.from(store, distance));
+            responseList.add(StoreListResponse.from(store, distanceStr));
         }
 
         return responseList;
@@ -223,5 +229,13 @@ public class StoreService {
         double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 
         return R * c * 1000; // km를 m로 변환
+    }
+
+    private String formatDistance(double meters) {
+        if (meters < 1000) {
+            return String.format("%.0fm", meters);
+        } else {
+            return String.format("%.1fkm", meters / 1000.0);
+        }
     }
 }

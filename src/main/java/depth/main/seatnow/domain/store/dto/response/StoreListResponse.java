@@ -6,6 +6,8 @@ import lombok.Builder;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Getter
 @Builder
@@ -18,16 +20,15 @@ public class StoreListResponse {
     private Integer totalSeatCount;
     private Integer availableSeatCount;
     private String seatStatus;
-    private String mainImageUrl;
+    private List<String> images;
     private LocalDateTime updatedAt;
     private Double distance;
 
     public static StoreListResponse from(Store store, Double distance) {
-        String imageUrl = store.getImages().stream()
-                .filter(StoreImage::isMain)
-                .findFirst()
+        List<String> imageUrls = store.getImages().stream()
                 .map(StoreImage::getImageUrl)
-                .orElse(null);
+                .limit(3)
+                .toList();
 
         return StoreListResponse.builder()
                 .storeId(store.getId())
@@ -38,7 +39,7 @@ public class StoreListResponse {
                 .totalSeatCount(store.getTotalSeatCount())
                 .availableSeatCount(store.getAvailableSeatCount())
                 .seatStatus(store.getStatusTag().name())
-                .mainImageUrl(imageUrl)
+                .images(imageUrls)
                 .updatedAt(store.getModifiedAt())
                 .distance(distance)
                 .build();

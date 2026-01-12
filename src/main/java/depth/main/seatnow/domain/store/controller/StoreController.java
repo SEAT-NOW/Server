@@ -13,6 +13,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -105,8 +106,9 @@ public class StoreController {
         );
     }
     @Operation(
-            summary = "실시간 좌석 현황 조회",
-            description = "매장의 공간별/테이블별 이용 및 빈 좌석 현황을 조회합니다."
+            summary = "실시간 좌석 현황 조회 [인증 필요]",
+            description = "Bearer 토큰 인증이 필요하며, 매장의 공간별/테이블별 이용 및 빈 좌석 현황을 조회합니다.",
+            security = { @SecurityRequirement(name = "bearerAuth") }
     )
     @ApiResponses(value = {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(
@@ -153,8 +155,9 @@ public class StoreController {
     }
 
     @Operation(
-            summary = "사장님 회원탈퇴",
-            description = "사업자번호와 비밀번호를 확인하여 매장 및 사장님 계정을 삭제합니다."
+            summary = "사장님 회원탈퇴 [인증 필요]",
+            description = "Bearer 토큰 인증이 필요하며, 사업자번호와 비밀번호를 확인하여 매장 및 사장님 계정을 삭제합니다.",
+            security = { @SecurityRequirement(name = "bearerAuth") }
     )
     @ApiResponses(value = {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(

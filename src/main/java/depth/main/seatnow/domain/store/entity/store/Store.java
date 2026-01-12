@@ -173,7 +173,7 @@ public class Store extends BaseTimeEntity {
 
                     // 마감 1시간 전인지 확인
                     long minutesUntilClose = java.time.temporal.ChronoUnit.MINUTES.between(now, endDateTime);
-                    if (minutesUntilClose <= 60) {
+                    if (minutesUntilClose <= 30) {
                         status = OperationStatus.CLOSING_SOON;
                     }
 

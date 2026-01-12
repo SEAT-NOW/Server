@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
 
 @Getter
@@ -26,6 +27,7 @@ public class StoreListResponse {
 
     public static StoreListResponse from(Store store, String distance) {
         List<String> imageUrls = store.getImages().stream()
+                .sorted(Comparator.comparing(StoreImage::isMain).reversed())
                 .map(StoreImage::getImageUrl)
                 .limit(3)
                 .toList();

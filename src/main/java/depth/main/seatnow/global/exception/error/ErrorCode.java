@@ -11,6 +11,7 @@ public enum ErrorCode {
     INVALID_BUSINESS_NUMBER(HttpStatus.BAD_REQUEST, "4001", "유효하지 않은 사업자번호입니다."),
     INVALID_VERIFICATION_CODE(HttpStatus.BAD_REQUEST, "4002", "인증 번호가 일치하지 않습니다."),
     EXPIRED_VERIFICATION_CODE(HttpStatus.BAD_REQUEST, "4003", "인증 시간이 만료되었습니다. 다시 시도해주세요."),
+    INVALID_TABLE_COUNT(HttpStatus.BAD_REQUEST,"4004", "사용 중인 테이블 수는 전체 테이블 수를 초과할 수 없습니다."),
     PASSWORD_MISMATCH(HttpStatus.BAD_REQUEST, "4004", "유효하지 않은 비밀번호입니다."),
 
     UNAUTHORIZED(HttpStatus.UNAUTHORIZED,"4010", "인증이 필요합니다."),
@@ -23,6 +24,8 @@ public enum ErrorCode {
 
     NOT_FOUND(HttpStatus.NOT_FOUND,"4040", "존재하지 않는 사용자입니다."),
     STORE_NOT_FOUND(HttpStatus.NOT_FOUND,"4041", "존재하지 않는 매장입니다."),
+    TABLE_NOT_FOUND(HttpStatus.NOT_FOUND,"4042", "매장에 존재하지 않는 테이블입니다."),
+    SPACE_NOT_FOUND(HttpStatus.NOT_FOUND,"4043", "매장에 존재하지 않는 공간입니다."),
 
     CONFLICT(HttpStatus.CONFLICT, "4090", "이미 존재하는 리소스입니다."),
     DUPLICATE_EMAIL(HttpStatus.CONFLICT, "4091", "이미 가입된 이메일입니다."),

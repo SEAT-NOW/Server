@@ -1,8 +1,11 @@
 package depth.main.seatnow.domain.store.controller;
 
 import depth.main.seatnow.domain.store.dto.request.OwnerSignupRequest;
+import depth.main.seatnow.domain.store.dto.request.SpaceSeatUpdateRequest;
 import depth.main.seatnow.domain.store.dto.request.OwnerWithdrawRequest;
 import depth.main.seatnow.domain.store.dto.response.SeatResponse;
+import depth.main.seatnow.domain.store.dto.response.SpaceSeatUpdateResponse;
+import depth.main.seatnow.domain.store.service.SeatService;
 import depth.main.seatnow.domain.store.service.StoreService;
 import depth.main.seatnow.global.common.ApiResponse;
 import depth.main.seatnow.global.exception.error.ErrorResponse;
@@ -20,7 +23,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -33,6 +35,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class StoreController {
     private final StoreService storeService;
+    private final SeatService seatService;
     @Operation(
             summary = "사장님 회원가입 및 매장 등록",
             description = "계정 정보, 사업자 정보, 매장 레이아웃, 운영 시간을 한 번에 등록합니다. (Multipart Form Data 방식)"
@@ -152,6 +155,64 @@ public class StoreController {
 
         SeatResponse response = storeService.getStoreSeatStatus(storeId, userDetails);
         return ApiResponse.ok(response);
+    }
+
+    @Operation(
+            summary = "실시간 좌석 현황 업데이트",
+            description = "사장님이 매장의 좌석 이용 현황을 직접 수정합니다."
+    )
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "200",
+                    description = "업데이트 성공",
+                    content = @Content(schema = @Schema(implementation = SpaceSeatUpdateResponse.class))
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "400",
+                    description = "잘못된 요청 (음수 입력 또는 전체 좌석 수 초과)",
+                    content = @Content(
+                            mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            examples = {
+                                    @ExampleObject(
+                                            name = "좌석 수 초과",
+                                            summary = "INVALID_TABLE_COUNT",
+                                            value = "{\"code\": \"4004\", \"message\": \"사용 중인 테이블 수는 전체 테이블 수를 초과할 수 없습니다.\", \"detail\": null}"
+                                    ),
+                                    @ExampleObject(
+                                            name = "음수 입력",
+                                            summary = "VALIDATION_ERROR",
+                                            value = "{\"code\": \"4000\", \"message\": \"잘못된 요청입니다.\", \"detail\": \"테이블 수는 0개 이상이어야 합니다.\"}"
+                                    )
+                            }
+                    )
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "403",
+                    description = "권한 없음 (본인 매장이 아니거나 OWNER 권한 없음)",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "404",
+                    description = "존재하지 않는 리소스 (매장, 구역, 테이블 ID 오류)",
+                    content = @Content(
+                            mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            examples = {
+                                    @ExampleObject(name = "매장 없음", value = "{\"code\": \"4041\", \"message\": \"존재하지 않는 매장입니다.\", \"detail\": null}"),
+                                    @ExampleObject(name = "테이블 없음", value = "{\"code\": \"4042\", \"message\": \"존재하지 않는 테이블입니다.\", \"detail\": null}"),
+                                    @ExampleObject(name = "공간 없음", value = "{\"code\": \"4043\", \"message\": \"존재하지 않는 공간입니다.\", \"detail\": null}")
+                            }
+                    )
+            )
+    })
+
+    @PreAuthorize("hasRole('OWNER')")
+    @PatchMapping("/seats")
+    public ApiResponse<SpaceSeatUpdateResponse> updateStoreSeats(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestBody @Valid SpaceSeatUpdateRequest request) {
+
+        SpaceSeatUpdateResponse response = seatService.updateAllSeats(userDetails, request);
+        return ApiResponse.ok(response, "좌석 현황이 성공적으로 업데이트되었습니다.");
     }
 
     @Operation(

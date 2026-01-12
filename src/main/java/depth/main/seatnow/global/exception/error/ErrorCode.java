@@ -11,6 +11,7 @@ public enum ErrorCode {
     INVALID_BUSINESS_NUMBER(HttpStatus.BAD_REQUEST, "4001", "유효하지 않은 사업자번호입니다."),
     INVALID_VERIFICATION_CODE(HttpStatus.BAD_REQUEST, "4002", "인증 번호가 일치하지 않습니다."),
     EXPIRED_VERIFICATION_CODE(HttpStatus.BAD_REQUEST, "4003", "인증 시간이 만료되었습니다. 다시 시도해주세요."),
+    PASSWORD_MISMATCH(HttpStatus.BAD_REQUEST, "4004", "유효하지 않은 비밀번호입니다."),
 
     UNAUTHORIZED(HttpStatus.UNAUTHORIZED,"4010", "인증이 필요합니다."),
     INVALID_TOKEN(HttpStatus.UNAUTHORIZED,"4011", "잘못된 토큰입니다."),

@@ -1,6 +1,7 @@
 package depth.main.seatnow.domain.store.controller;
 
 import depth.main.seatnow.domain.store.dto.request.OwnerSignupRequest;
+import depth.main.seatnow.domain.store.dto.request.OwnerWithdrawRequest;
 import depth.main.seatnow.domain.store.dto.response.SeatResponse;
 import depth.main.seatnow.domain.store.service.StoreService;
 import depth.main.seatnow.global.common.ApiResponse;
@@ -149,6 +150,50 @@ public class StoreController {
 
         SeatResponse response = storeService.getStoreSeatStatus(storeId, userDetails);
         return ApiResponse.ok(response);
+    }
+
+    @Operation(
+            summary = "사장님 회원탈퇴",
+            description = "사업자번호와 비밀번호를 확인하여 매장 및 사장님 계정을 삭제합니다."
+    )
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "200",
+                    description = "회원탈퇴 성공",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = @ExampleObject(value = "{\"success\": true, \"data\": null, \"message\": \"사장님 회원탈퇴가 완료되었습니다.\"}")
+                    )
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "400",
+                    description = "검증 실패 (비밀번호 또는 사업자번호 불일치)",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = {
+                                    @ExampleObject(
+                                            name = "비밀번호 불일치",
+                                            summary = "PASSWORD_MISMATCH",
+                                            value = "{\"code\": \"4004\", \"message\": \"유효하지 않은 비밀번호입니다.\", \"detail\": null}"
+                                    ),
+                                    @ExampleObject(
+                                            name = "사업자 번호 불일치",
+                                            summary = "INVALID_BUSINESS_NUMBER",
+                                            value = "{\"code\": \"4001\", \"message\": \"유효하지 않은 사업자번호입니다.\", \"detail\": null}"
+                                    )
+                            }
+                    )
+            )
+    })
+    @PreAuthorize("hasRole('OWNER')")
+    @DeleteMapping("/owner")
+    public ApiResponse<Void> withdrawOwner(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @Valid @RequestBody OwnerWithdrawRequest request
+    ) {
+        storeService.withdrawOwner(userDetails, request);
+        return ApiResponse.ok(null, "사장님 회원탈퇴가 완료되었습니다.");
     }
 }
 

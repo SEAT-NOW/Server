@@ -2,6 +2,7 @@ package depth.main.seatnow.domain.store.service;
 
 import depth.main.seatnow.domain.store.dto.request.OperationRequest;
 import depth.main.seatnow.domain.store.dto.request.OwnerSignupRequest;
+import depth.main.seatnow.domain.store.dto.request.OwnerWithdrawRequest;
 import depth.main.seatnow.domain.store.dto.request.SpaceRequest;
 import depth.main.seatnow.domain.store.dto.response.SeatResponse;
 import depth.main.seatnow.domain.store.entity.operation.OpeningHour;
@@ -15,6 +16,7 @@ import depth.main.seatnow.domain.store.repository.StoreRepository;
 import depth.main.seatnow.domain.user.entity.User;
 import depth.main.seatnow.domain.user.entity.enums.Role;
 import depth.main.seatnow.domain.user.repository.UserRepository;
+import depth.main.seatnow.global.exception.custom.BadRequestException;
 import depth.main.seatnow.global.exception.custom.ConflictException;
 import depth.main.seatnow.global.exception.custom.ForbiddenException;
 import depth.main.seatnow.global.exception.custom.NotFoundException;
@@ -108,6 +110,29 @@ public class StoreService {
         }
 
         return SeatResponse.from(store);
+    }
+
+    @Transactional
+    public void withdrawOwner(CustomUserDetails userDetails, OwnerWithdrawRequest request) {
+        User owner = userDetails.getUser();
+
+        // 매장 조회
+        Store store = storeRepository.findByUserId(owner.getId())
+                .orElseThrow(() -> new NotFoundException(ErrorCode.STORE_NOT_FOUND));
+
+        // 비밀번호 검증
+        if (!passwordEncoder.matches(request.getPassword(), owner.getPassword())) {
+            throw new BadRequestException(ErrorCode.PASSWORD_MISMATCH);
+        }
+
+        // 사업자 등록번호 검증
+        if (!store.getBusinessNumber().equals(request.getBusinessNumber())) {
+            throw new BadRequestException(ErrorCode.INVALID_BUSINESS_NUMBER);
+        }
+
+        // 삭제
+        storeRepository.delete(store);
+        userRepository.delete(owner);
     }
 
     private void uploadAndMapImages(List<MultipartFile> storeImages, Store store) {

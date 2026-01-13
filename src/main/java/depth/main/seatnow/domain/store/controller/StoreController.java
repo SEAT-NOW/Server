@@ -192,7 +192,16 @@ public class StoreController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(
                     responseCode = "403",
                     description = "권한 없음 (본인 매장이 아니거나 OWNER 권한 없음)",
-                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))
+                    content = @Content(
+                            mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            examples = {
+                                    @ExampleObject(
+                                            name = "접근 권한 없음",
+                                            summary = "FORBIDDEN",
+                                            value = "{\"code\": \"4030\", \"message\": \"접근 권한이 없습니다.\", \"detail\": null}"
+                                    )
+                            }
+                    )
             ),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(
                     responseCode = "404",

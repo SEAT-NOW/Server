@@ -131,12 +131,12 @@ public class VerificationController {
                                     @ExampleObject(
                                             name = "인증번호 불일치",
                                             summary = "INVALID_VERIFICATION_CODE",
-                                            value = "{\"code\": \"4002\", \"message\": \"인증 번호가 일치하지 않습니다.\"}"
+                                            value = "{\"code\": \"4002\", \"message\": \"인증 번호가 일치하지 않습니다.\", \"detail\": \"null\"}"
                                     ),
                                     @ExampleObject(
                                             name = "인증 시간 만료",
                                             summary = "EXPIRED_VERIFICATION_CODE",
-                                            value = "{\"code\": \"4003\", \"message\": \"인증 시간이 만료되었습니다. 다시 시도해주세요.\"}"
+                                            value = "{\"code\": \"4003\", \"message\": \"인증 시간이 만료되었습니다. 다시 시도해주세요.\", \"detail\": \"null\"}"
                                     )
                             })
             )
@@ -172,7 +172,7 @@ public class VerificationController {
                             examples = @ExampleObject(
                                     name = "문자 발송 실패",
                                     summary = "EXTERNAL_API_ERROR",
-                                    value = "{\"code\": \"5001\", \"message\": \"외부 시스템과의 통신 중 오류가 발생했습니다.\", \"detail\": \"CoolSMS API 호출에 실패했습니다.\"}"
+                                    value = "{\"code\": \"5001\", \"message\": \"외부 시스템과의 통신 중 오류가 발생했습니다.\", \"detail\": \"null\"}"
                             ))
             )
     })
@@ -199,12 +199,12 @@ public class VerificationController {
                                     @ExampleObject(
                                             name = "인증번호 불일치",
                                             summary = "INVALID_VERIFICATION_CODE",
-                                            value = "{\"code\": \"4002\", \"message\": \"인증 번호가 일치하지 않습니다.\"}"
+                                            value = "{\"code\": \"4002\", \"message\": \"인증 번호가 일치하지 않습니다.\",  \"detail\": \"null\"}"
                                     ),
                                     @ExampleObject(
                                             name = "인증 시간 만료",
                                             summary = "EXPIRED_VERIFICATION_CODE",
-                                            value = "{\"code\": \"4003\", \"message\": \"인증 시간이 만료되었습니다. 다시 시도해주세요.\"}"
+                                            value = "{\"code\": \"4003\", \"message\": \"인증 시간이 만료되었습니다. 다시 시도해주세요.\", \"detail\": \"null\"}"
                                     )
                             })
             )

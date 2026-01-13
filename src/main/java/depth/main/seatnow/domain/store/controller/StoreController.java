@@ -2,6 +2,7 @@ package depth.main.seatnow.domain.store.controller;
 
 import depth.main.seatnow.domain.store.dto.request.OwnerSignupRequest;
 import depth.main.seatnow.domain.store.dto.request.SpaceSeatUpdateRequest;
+import depth.main.seatnow.domain.store.dto.request.OwnerWithdrawRequest;
 import depth.main.seatnow.domain.store.dto.response.SeatResponse;
 import depth.main.seatnow.domain.store.dto.response.SpaceSeatUpdateResponse;
 import depth.main.seatnow.domain.store.service.SeatService;
@@ -15,6 +16,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -107,8 +109,9 @@ public class StoreController {
         );
     }
     @Operation(
-            summary = "실시간 좌석 현황 조회",
-            description = "매장의 공간별/테이블별 이용 및 빈 좌석 현황을 조회합니다."
+            summary = "실시간 좌석 현황 조회 [인증 필요]",
+            description = "Bearer 토큰 인증이 필요하며, 매장의 공간별/테이블별 이용 및 빈 좌석 현황을 조회합니다.",
+            security = { @SecurityRequirement(name = "bearerAuth") }
     )
     @ApiResponses(value = {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(
@@ -210,6 +213,51 @@ public class StoreController {
 
         SpaceSeatUpdateResponse response = seatService.updateAllSeats(userDetails, request);
         return ApiResponse.ok(response, "좌석 현황이 성공적으로 업데이트되었습니다.");
+    }
+
+    @Operation(
+            summary = "사장님 회원탈퇴 [인증 필요]",
+            description = "Bearer 토큰 인증이 필요하며, 사업자번호와 비밀번호를 확인하여 매장 및 사장님 계정을 삭제합니다.",
+            security = { @SecurityRequirement(name = "bearerAuth") }
+    )
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "200",
+                    description = "회원탈퇴 성공",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = @ExampleObject(value = "{\"success\": true, \"data\": null, \"message\": \"사장님 회원탈퇴가 완료되었습니다.\"}")
+                    )
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "400",
+                    description = "검증 실패 (비밀번호 또는 사업자번호 불일치)",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = {
+                                    @ExampleObject(
+                                            name = "비밀번호 불일치",
+                                            summary = "PASSWORD_MISMATCH",
+                                            value = "{\"code\": \"4004\", \"message\": \"유효하지 않은 비밀번호입니다.\", \"detail\": null}"
+                                    ),
+                                    @ExampleObject(
+                                            name = "사업자 번호 불일치",
+                                            summary = "INVALID_BUSINESS_NUMBER",
+                                            value = "{\"code\": \"4001\", \"message\": \"유효하지 않은 사업자번호입니다.\", \"detail\": null}"
+                                    )
+                            }
+                    )
+            )
+    })
+    @PreAuthorize("hasRole('OWNER')")
+    @DeleteMapping("/owner")
+    public ApiResponse<Void> withdrawOwner(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @Valid @RequestBody OwnerWithdrawRequest request
+    ) {
+        storeService.withdrawOwner(userDetails, request);
+        return ApiResponse.ok(null, "사장님 회원탈퇴가 완료되었습니다.");
     }
 }
 

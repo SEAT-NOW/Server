@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(readOnly = true)
 public class UserService {
     private final UserRepository userRepository;
+    @Transactional
     public void withdrawUser(CustomUserDetails userDetails) {
         User user = userRepository.findById(userDetails.getUserId())
                 .orElseThrow(() -> new NotFoundException(ErrorCode.NOT_FOUND));

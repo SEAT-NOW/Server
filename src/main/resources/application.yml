@@ -2,6 +2,11 @@ spring:
   profiles:
     include: secret # application-secret.yml을 불러옴
 
+  servlet:
+    multipart:
+      max-file-size: 10MB      # 파일 한 개당 최대 용량
+      max-request-size: 10MB   # 한 번의 요청에 담긴 전체 파일 용량
+      
   data:
     redis:
       host: localhost
@@ -10,7 +15,7 @@ spring:
   # JPA 및 기타 공통 설정들
   jpa:
     hibernate:
-      ddl-auto: create # 애플리케이션 실행 시 Entity 변경 사항을 DB에 자동 반영
+      ddl-auto: none 
     show-sql: false # 실행되는 SQL 쿼리를 로그로 출력(디버깅용)
     properties:
       hibernate:

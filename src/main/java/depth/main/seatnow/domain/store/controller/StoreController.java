@@ -6,6 +6,7 @@ import depth.main.seatnow.domain.store.dto.request.OwnerWithdrawRequest;
 import depth.main.seatnow.domain.store.dto.response.SeatResponse;
 import depth.main.seatnow.domain.store.dto.response.SpaceSeatUpdateResponse;
 import depth.main.seatnow.domain.store.service.SeatService;
+import depth.main.seatnow.domain.store.dto.response.StoreListResponse;
 import depth.main.seatnow.domain.store.service.StoreService;
 import depth.main.seatnow.global.common.ApiResponse;
 import depth.main.seatnow.global.exception.error.ErrorResponse;
@@ -158,8 +159,36 @@ public class StoreController {
     }
 
     @Operation(
-            summary = "실시간 좌석 현황 업데이트",
-            description = "사장님이 매장의 좌석 이용 현황을 직접 수정합니다."
+            summary = "술집 검색 및 지도 조회",
+            description = "홈 화면, N명 자리 찾기, 키워드 검색 API" +
+                    "headCount가 1이상이면 좌석 수로 필터링, 결과는 최신 업데이트 순으로 정렬"
+    )
+    @GetMapping("/search")
+    public ApiResponse<List<StoreListResponse>> searchStores(
+            @Parameter(description = "검색어 (가게명 or 주소)")
+            @RequestParam(required = false) String keyword,
+
+            @Parameter(description = "위도")
+            @RequestParam(required = false) Double lat,
+
+            @Parameter(description = "경도")
+            @RequestParam(required = false) Double lng,
+
+            @Parameter(description = "검색 반경 (km 단위, 기본값 1.0)")
+            @RequestParam(defaultValue = "1.0") Double radius,
+
+            @Parameter(description = "인원수 필터 (0: 전체, N: N석 이상 남은 곳")
+            @RequestParam(defaultValue = "0") Integer headCount) {
+        List<StoreListResponse> response = storeService.searchStores(keyword, lat, lng, radius, headCount);
+        return ApiResponse.ok(response, "조회에 성공하였습니다.");
+    }
+
+    @Operation(
+            summary = "실시간 좌석 현황 업데이트 [인증 필요]",
+            description = "Bearer 토큰 인증이 필요하며, 사장님이 매장의 좌석 이용 현황을 직접 수정합니다. " +
+                    "**[주의] 빈 좌석(Empty Seat)을 기준으로 업데이트하더라도, 반드시 '이용 중인 좌석 수(usedCount)'로 계산하여 전송해야 합니다.** " +
+                    "모든 좌석 계산의 기준점은 '이용 좌석'이며, 빈 좌석 정보는 서버에서 전체 좌석과의 차이로 자동 산출됩니다.",
+            security = { @SecurityRequirement(name = "bearerAuth") }
     )
     @ApiResponses(value = {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(
@@ -189,7 +218,16 @@ public class StoreController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(
                     responseCode = "403",
                     description = "권한 없음 (본인 매장이 아니거나 OWNER 권한 없음)",
-                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))
+                    content = @Content(
+                            mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            examples = {
+                                    @ExampleObject(
+                                            name = "접근 권한 없음",
+                                            summary = "FORBIDDEN",
+                                            value = "{\"code\": \"4030\", \"message\": \"접근 권한이 없습니다.\", \"detail\": null}"
+                                    )
+                            }
+                    )
             ),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(
                     responseCode = "404",

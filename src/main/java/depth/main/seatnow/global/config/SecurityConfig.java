@@ -50,6 +50,8 @@ public class SecurityConfig {
                         .requestMatchers(WHITE_LIST).permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/stores/{storeId}/seats").hasRole("OWNER")
                         .requestMatchers(HttpMethod.PATCH, "/api/v1/stores/seats").hasRole("OWNER")
+                        .requestMatchers(HttpMethod.DELETE, "/api/v1/users").hasRole("USER")
+                        .requestMatchers(HttpMethod.DELETE, "api/v1/stores/owner").hasRole("OWNER")
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(new JwtAuthenticationFilter(jwtUtil, customUserDetailsService),

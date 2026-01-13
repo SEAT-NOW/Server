@@ -7,6 +7,8 @@ import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
+import java.util.Optional;
+
 public interface StoreRepository extends JpaRepository<Store, Long> {
     boolean existsByBusinessNumber(String businessNumber);
 
@@ -19,4 +21,6 @@ public interface StoreRepository extends JpaRepository<Store, Long> {
     // 키워드 검색
     @Query("SELECT s FROM Store s WHERE s.storeName LIKE CONCAT('%', :keyword, '%') OR s.address LIKE CONCAT('%', :keyword, '%') ORDER BY s.modifiedAt DESC")
     List<Store> searchByKeyword(@Param("keyword") String keyword);
+
+    Optional<Store> findByUserId(Long userId);
 }

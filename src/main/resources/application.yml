@@ -10,7 +10,7 @@ spring:
   # JPA 및 기타 공통 설정들
   jpa:
     hibernate:
-      ddl-auto: create # 애플리케이션 실행 시 Entity 변경 사항을 DB에 자동 반영
+      ddl-auto: none 
     show-sql: false # 실행되는 SQL 쿼리를 로그로 출력(디버깅용)
     properties:
       hibernate:

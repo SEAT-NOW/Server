@@ -185,4 +185,7 @@ public class Store extends BaseTimeEntity {
         this.operationStatus = status;
     }
 
+    public void updateUsedSeatCount(int totalUsedSeats) {
+        this.usedSeatCount = totalUsedSeats;
+    }
 }

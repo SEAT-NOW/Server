@@ -1,7 +1,11 @@
 package depth.main.seatnow.domain.store.controller;
 
 import depth.main.seatnow.domain.store.dto.request.OwnerSignupRequest;
+import depth.main.seatnow.domain.store.dto.request.SpaceSeatUpdateRequest;
+import depth.main.seatnow.domain.store.dto.request.OwnerWithdrawRequest;
 import depth.main.seatnow.domain.store.dto.response.SeatResponse;
+import depth.main.seatnow.domain.store.dto.response.SpaceSeatUpdateResponse;
+import depth.main.seatnow.domain.store.service.SeatService;
 import depth.main.seatnow.domain.store.dto.response.StoreListResponse;
 import depth.main.seatnow.domain.store.service.StoreService;
 import depth.main.seatnow.global.common.ApiResponse;
@@ -13,6 +17,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -31,6 +36,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class StoreController {
     private final StoreService storeService;
+    private final SeatService seatService;
     @Operation(
             summary = "사장님 회원가입 및 매장 등록",
             description = "계정 정보, 사업자 정보, 매장 레이아웃, 운영 시간을 한 번에 등록합니다. (Multipart Form Data 방식)"
@@ -104,8 +110,9 @@ public class StoreController {
         );
     }
     @Operation(
-            summary = "실시간 좌석 현황 조회",
-            description = "매장의 공간별/테이블별 이용 및 빈 좌석 현황을 조회합니다."
+            summary = "실시간 좌석 현황 조회 [인증 필요]",
+            description = "Bearer 토큰 인증이 필요하며, 매장의 공간별/테이블별 이용 및 빈 좌석 현황을 조회합니다.",
+            security = { @SecurityRequirement(name = "bearerAuth") }
     )
     @ApiResponses(value = {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(
@@ -174,6 +181,109 @@ public class StoreController {
             @RequestParam(defaultValue = "0") Integer headCount) {
         List<StoreListResponse> response = storeService.searchStores(keyword, lat, lng, radius, headCount);
         return ApiResponse.ok(response, "조회에 성공하였습니다.");
+    }
+
+    @Operation(
+            summary = "실시간 좌석 현황 업데이트",
+            description = "사장님이 매장의 좌석 이용 현황을 직접 수정합니다."
+    )
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "200",
+                    description = "업데이트 성공",
+                    content = @Content(schema = @Schema(implementation = SpaceSeatUpdateResponse.class))
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "400",
+                    description = "잘못된 요청 (음수 입력 또는 전체 좌석 수 초과)",
+                    content = @Content(
+                            mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            examples = {
+                                    @ExampleObject(
+                                            name = "좌석 수 초과",
+                                            summary = "INVALID_TABLE_COUNT",
+                                            value = "{\"code\": \"4004\", \"message\": \"사용 중인 테이블 수는 전체 테이블 수를 초과할 수 없습니다.\", \"detail\": null}"
+                                    ),
+                                    @ExampleObject(
+                                            name = "음수 입력",
+                                            summary = "VALIDATION_ERROR",
+                                            value = "{\"code\": \"4000\", \"message\": \"잘못된 요청입니다.\", \"detail\": \"테이블 수는 0개 이상이어야 합니다.\"}"
+                                    )
+                            }
+                    )
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "403",
+                    description = "권한 없음 (본인 매장이 아니거나 OWNER 권한 없음)",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "404",
+                    description = "존재하지 않는 리소스 (매장, 구역, 테이블 ID 오류)",
+                    content = @Content(
+                            mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            examples = {
+                                    @ExampleObject(name = "매장 없음", value = "{\"code\": \"4041\", \"message\": \"존재하지 않는 매장입니다.\", \"detail\": null}"),
+                                    @ExampleObject(name = "테이블 없음", value = "{\"code\": \"4042\", \"message\": \"존재하지 않는 테이블입니다.\", \"detail\": null}"),
+                                    @ExampleObject(name = "공간 없음", value = "{\"code\": \"4043\", \"message\": \"존재하지 않는 공간입니다.\", \"detail\": null}")
+                            }
+                    )
+            )
+    })
+
+    @PreAuthorize("hasRole('OWNER')")
+    @PatchMapping("/seats")
+    public ApiResponse<SpaceSeatUpdateResponse> updateStoreSeats(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestBody @Valid SpaceSeatUpdateRequest request) {
+
+        SpaceSeatUpdateResponse response = seatService.updateAllSeats(userDetails, request);
+        return ApiResponse.ok(response, "좌석 현황이 성공적으로 업데이트되었습니다.");
+    }
+
+    @Operation(
+            summary = "사장님 회원탈퇴 [인증 필요]",
+            description = "Bearer 토큰 인증이 필요하며, 사업자번호와 비밀번호를 확인하여 매장 및 사장님 계정을 삭제합니다.",
+            security = { @SecurityRequirement(name = "bearerAuth") }
+    )
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "200",
+                    description = "회원탈퇴 성공",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = @ExampleObject(value = "{\"success\": true, \"data\": null, \"message\": \"사장님 회원탈퇴가 완료되었습니다.\"}")
+                    )
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "400",
+                    description = "검증 실패 (비밀번호 또는 사업자번호 불일치)",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = {
+                                    @ExampleObject(
+                                            name = "비밀번호 불일치",
+                                            summary = "PASSWORD_MISMATCH",
+                                            value = "{\"code\": \"4004\", \"message\": \"유효하지 않은 비밀번호입니다.\", \"detail\": null}"
+                                    ),
+                                    @ExampleObject(
+                                            name = "사업자 번호 불일치",
+                                            summary = "INVALID_BUSINESS_NUMBER",
+                                            value = "{\"code\": \"4001\", \"message\": \"유효하지 않은 사업자번호입니다.\", \"detail\": null}"
+                                    )
+                            }
+                    )
+            )
+    })
+    @PreAuthorize("hasRole('OWNER')")
+    @DeleteMapping("/owner")
+    public ApiResponse<Void> withdrawOwner(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @Valid @RequestBody OwnerWithdrawRequest request
+    ) {
+        storeService.withdrawOwner(userDetails, request);
+        return ApiResponse.ok(null, "사장님 회원탈퇴가 완료되었습니다.");
     }
 }
 

@@ -36,7 +36,8 @@ public class StoreListResponse {
     private Integer availableSeatCount;
 
     @Schema(description = "좌석 혼잡도 상태 (여유, 보통, 혼잡, 만석)", example = "여유")
-    private String seatStatus;
+    private String seatStatusName;
+    private String seatStatusDescription;
 
     @Schema(description = "매장 이미지 리스트 (최대 3장, 0번 인덱스가 대표 이미지)", example = "[\"url1.jpg\", \"url2.jpg\"]")
     private List<String> images;
@@ -65,7 +66,8 @@ public class StoreListResponse {
                 .longitude(store.getLongitude())
                 .totalSeatCount(store.getTotalSeatCount())
                 .availableSeatCount(store.getAvailableSeatCount())
-                .seatStatus(store.getStatusTag().getDescription())
+                .seatStatusName(store.getOperationStatus().name())
+                .seatStatusDescription(store.getOperationStatus().getDescription())
                 .images(imageUrls)
                 .updatedAt(store.getModifiedAt())
                 .distance(distance)

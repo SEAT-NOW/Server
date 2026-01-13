@@ -158,8 +158,11 @@ public class StoreController {
     }
 
     @Operation(
-            summary = "실시간 좌석 현황 업데이트",
-            description = "사장님이 매장의 좌석 이용 현황을 직접 수정합니다."
+            summary = "실시간 좌석 현황 업데이트 [인증 필요]",
+            description = "Bearer 토큰 인증이 필요하며, 사장님이 매장의 좌석 이용 현황을 직접 수정합니다. " +
+                    "**[주의] 빈 좌석(Empty Seat)을 기준으로 업데이트하더라도, 반드시 '이용 중인 좌석 수(usedCount)'로 계산하여 전송해야 합니다.** " +
+                    "모든 좌석 계산의 기준점은 '이용 좌석'이며, 빈 좌석 정보는 서버에서 전체 좌석과의 차이로 자동 산출됩니다.",
+            security = { @SecurityRequirement(name = "bearerAuth") }
     )
     @ApiResponses(value = {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(
@@ -189,7 +192,16 @@ public class StoreController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(
                     responseCode = "403",
                     description = "권한 없음 (본인 매장이 아니거나 OWNER 권한 없음)",
-                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))
+                    content = @Content(
+                            mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            examples = {
+                                    @ExampleObject(
+                                            name = "접근 권한 없음",
+                                            summary = "FORBIDDEN",
+                                            value = "{\"code\": \"4030\", \"message\": \"접근 권한이 없습니다.\", \"detail\": null}"
+                                    )
+                            }
+                    )
             ),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(
                     responseCode = "404",

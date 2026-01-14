@@ -20,8 +20,8 @@ public class StoreListResponse {
     @Schema(description = "매장 이름", example = "명지대 꿈에도")
     private String storeName;
 
-    @Schema(description = "매장 주소", example = "경기도 용인시 명지로 113")
-    private String address;
+    @Schema(description = "읍면동 단위 지역명", example = "역북동")
+    private String neighborhood;
 
     @Schema(description = "위도", example = "37.556")
     private Double latitude;
@@ -35,8 +35,10 @@ public class StoreListResponse {
     @Schema(description = "현재 이용 가능 좌석 수", example = "10")
     private Integer availableSeatCount;
 
-    @Schema(description = "좌석 혼잡도 상태 (여유, 보통, 혼잡, 만석)", example = "여유")
+    @Schema(description = "매장 상태 태그 (영문)", example = "CROWDED")
     private String statusTag;
+
+    @Schema(description = "매장 상태 태그 이름 (한글)", example = "혼잡")
     private String statusTagName;
 
     @Schema(description = "매장 이미지 리스트 (최대 3장, 0번 인덱스가 대표 이미지)", example = "[\"url1.jpg\", \"url2.jpg\"]")
@@ -61,13 +63,13 @@ public class StoreListResponse {
         return StoreListResponse.builder()
                 .storeId(store.getId())
                 .storeName(store.getStoreName())
-                .address(store.getAddress())
+                .neighborhood(store.getNeighborhood())
                 .latitude(store.getLatitude())
                 .longitude(store.getLongitude())
                 .totalSeatCount(store.getTotalSeatCount())
                 .availableSeatCount(store.getAvailableSeatCount())
-                .statusTag(store.getOperationStatus().name())
-                .statusTagName(store.getOperationStatus().getDescription())
+                .statusTag(store.getStatusTag().name())
+                .statusTagName(store.getStatusTag().getDescription())
                 .images(imageUrls)
                 .updatedAt(store.getModifiedAt())
                 .distance(distance)

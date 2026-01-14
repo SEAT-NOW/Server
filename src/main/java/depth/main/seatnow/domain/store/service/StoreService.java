@@ -138,6 +138,50 @@ public class StoreService {
         userRepository.delete(owner);
     }
 
+    @Transactional
+    public List<StoreListResponse> searchStores(String keyword, Double lat, Double lng, Double radius, Integer headCount) {
+        List<Store> stores;
+
+        // 목록 조회
+        if (keyword != null && !keyword.isBlank()) {
+            // 키워드 검색
+            stores = storeRepository.searchByKeyword(keyword);
+        } else if (lat != null && lng != null) {
+            // 키워드가 없을 때만 위치 기반 반경 검색
+            stores = storeRepository.searchByLocation(lat, lng, radius);
+        } else {
+            return List.of();
+        }
+
+        // 인원수 필터링
+        // headCount가 1 이상일 때만 남은 좌석 수 비교
+        if (headCount != null && headCount > 0) {
+            List<Store> filteredStores = new ArrayList<>();
+            for (Store store : stores) {
+                if (store.getAvailableSeatCount() >= headCount) {
+                    filteredStores.add(store);
+                }
+            }
+            stores = filteredStores;
+        }
+
+        List<StoreListResponse> responseList = new ArrayList<>();
+        LocalDateTime now = LocalDateTime.now();
+
+        for (Store store : stores) {
+            String distanceStr = null;
+            store.updateOperationStatus(now);
+
+            if (lat != null && lng != null) {
+                double distanceMeters = calculateDistance(lat, lng, store.getLatitude(), store.getLongitude());
+                distanceStr = formatDistance(distanceMeters);
+            }
+
+            responseList.add(StoreListResponse.from(store, distanceStr));
+        }
+
+        return responseList;
+    }
     private void uploadAndMapImages(List<MultipartFile> storeImages, Store store) {
         for (int i = 0; i < storeImages.size(); i++) {
             MultipartFile imgFile = storeImages.get(i);
@@ -194,51 +238,6 @@ public class StoreService {
 
         // Store 엔티티에 합산된 결과 저장
         store.initializeSeatInfo(totalSeats);
-    }
-
-    @Transactional
-    public List<StoreListResponse> searchStores(String keyword, Double lat, Double lng, Double radius, Integer headCount) {
-        List<Store> stores;
-
-        // 목록 조회
-        if (keyword != null && !keyword.isBlank()) {
-            // 키워드 검색
-            stores = storeRepository.searchByKeyword(keyword);
-        } else if (lat != null && lng != null) {
-            // 키워드가 없을 때만 위치 기반 반경 검색
-            stores = storeRepository.searchByLocation(lat, lng, radius);
-        } else {
-            return List.of();
-        }
-
-        // 인원수 필터링
-        // headCount가 1 이상일 때만 남은 좌석 수 비교
-        if (headCount != null && headCount > 0) {
-            List<Store> filteredStores = new ArrayList<>();
-            for (Store store : stores) {
-                if (store.getAvailableSeatCount() >= headCount) {
-                    filteredStores.add(store);
-                }
-            }
-            stores = filteredStores;
-        }
-
-        List<StoreListResponse> responseList = new ArrayList<>();
-        LocalDateTime now = LocalDateTime.now();
-
-        for (Store store : stores) {
-            String distanceStr = null;
-            store.updateOperationStatus(now);
-
-            if (lat != null && lng != null) {
-                double distanceMeters = calculateDistance(lat, lng, store.getLatitude(), store.getLongitude());
-                distanceStr = formatDistance(distanceMeters);
-            }
-
-            responseList.add(StoreListResponse.from(store, distanceStr));
-        }
-
-        return responseList;
     }
 
     private double calculateDistance(double lat1, double lon1, double lat2, double lon2) {

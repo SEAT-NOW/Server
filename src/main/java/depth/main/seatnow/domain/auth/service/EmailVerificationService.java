@@ -64,7 +64,8 @@ public class EmailVerificationService {
             throw new BadRequestException(ErrorCode.INVALID_VERIFICATION_CODE);
         }
 
-        // 인증 성공 시 Redis에서 삭제 (선택 사항: 1회용 인증일 경우)
+        // 인증 성공 시, 번호는 지우고 '이메일 인증 완료 증표'를 저장
         redisTemplate.delete("email_verification:" + email);
+        redisTemplate.opsForValue().set("email_completed:" + email, "true", expiryTimeInMinutes, TimeUnit.MINUTES);
     }
 }

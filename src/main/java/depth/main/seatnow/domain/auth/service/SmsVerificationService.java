@@ -19,13 +19,6 @@ public class SmsVerificationService {
     @Value("${coolsms.sms.verification.expiry-time}")
     private long expiryTimeInMinutes;  // 인증 코드 유효 시간 (분 단위)
 
-    // 인증 코드 생성
-    private String generateVerificationCode() {
-        Random random = new Random();
-        int code = 100000 + random.nextInt(900000);  // 6자리 랜덤 코드 생성
-        return String.valueOf(code);
-    }
-
     // SMS 인증 코드 발송
     public void sendVerificationCode(String phoneNumber) {
         String verificationCode = generateVerificationCode();
@@ -50,5 +43,15 @@ public class SmsVerificationService {
 
         // 인증 성공 시 삭제
         redisTemplate.delete("sms_verification:" + phoneNumber);
+
+        // 인증 완료 증표를 저장
+        redisTemplate.opsForValue().set("sms_completed:" + phoneNumber, "true", expiryTimeInMinutes, TimeUnit.MINUTES);
+    }
+
+    // 인증 코드 생성
+    private String generateVerificationCode() {
+        Random random = new Random();
+        int code = 100000 + random.nextInt(900000);  // 6자리 랜덤 코드 생성
+        return String.valueOf(code);
     }
 }

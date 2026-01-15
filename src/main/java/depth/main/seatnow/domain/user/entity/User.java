@@ -30,4 +30,7 @@ public class User {
     private Role role;
 
 
+    public void updatePassword(String encode) {
+        this.password = encode;
+    }
 }

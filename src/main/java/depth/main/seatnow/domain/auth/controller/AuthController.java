@@ -12,6 +12,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
@@ -63,8 +64,9 @@ public class AuthController {
     }
 
     @Operation(
-            summary = "로그아웃",
-            description = "현재 로그인된 유저의 Refresh Token을 삭제하여 로그아웃 처리"
+            summary = "로그아웃 [인증 필요]",
+            description = "현재 로그인된 유저의 Refresh Token을 삭제하여 로그아웃 처리",
+            security = { @SecurityRequirement(name = "bearerAuth") }
     )
     @PostMapping("/logout")
     public ApiResponse<Void> logout(@AuthenticationPrincipal CustomUserDetails customUserDetails) {

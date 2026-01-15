@@ -1,8 +1,8 @@
 package depth.main.seatnow.domain.auth.service;
 
 import depth.main.seatnow.global.exception.custom.BadRequestException;
-import depth.main.seatnow.global.exception.custom.CustomException;
 import depth.main.seatnow.global.exception.error.ErrorCode;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.mail.SimpleMailMessage;
@@ -13,17 +13,13 @@ import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 @Service
+@RequiredArgsConstructor
 public class EmailVerificationService {
     private final StringRedisTemplate redisTemplate;
     private final JavaMailSender mailSender;
 
     @Value("${email.verification.expiry-time}")
     private long expiryTimeInMinutes;
-
-    public EmailVerificationService(StringRedisTemplate redisTemplate, JavaMailSender mailSender) {
-        this.redisTemplate = redisTemplate;
-        this.mailSender = mailSender;
-    }
 
     // 이메일 인증 코드 발송
     public void sendVerificationCode(String email) {

@@ -98,6 +98,11 @@ public class AuthService {
         return createAndSaveTokens(user);
     }
 
+    @Transactional
+    public void logout(Long userId) {
+        refreshTokenRepository.delete(String.valueOf(userId));
+    }
+
     /**
      * 휴대폰 번호로 이메일 찾기
      */
@@ -140,7 +145,7 @@ public class AuthService {
         // 5. 임시 비밀번호 메일 발송
         sendTempPasswordEmail(email, tempPassword);
 
-        // 6. 사용한 증표 삭제 
+        // 6. 사용한 증표 삭제
         redisTemplate.delete("email_completed:" + email);
     }
 

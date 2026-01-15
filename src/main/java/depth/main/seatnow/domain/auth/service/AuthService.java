@@ -90,6 +90,11 @@ public class AuthService {
         return createAndSaveTokens(user);
     }
 
+    @Transactional
+    public void logout(Long userId) {
+        refreshTokenRepository.delete(String.valueOf(userId));
+    }
+
     private KakaoDTO.KakaoProfile getKakaoProfile(String code) {
         KakaoDTO.OAuthToken oAuthToken = kakaoAuthClient.getOAuthToken(
                 "authorization_code",

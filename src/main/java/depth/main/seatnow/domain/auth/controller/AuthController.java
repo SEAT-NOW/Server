@@ -5,6 +5,7 @@ import depth.main.seatnow.global.common.ApiResponse;
 import depth.main.seatnow.domain.auth.dto.response.AuthResponseDto;
 import depth.main.seatnow.domain.auth.service.AuthService;
 import depth.main.seatnow.global.exception.error.ErrorResponse;
+import depth.main.seatnow.global.security.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -15,6 +16,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 @Tag(name = "인증/로그인", description = "카카오 로그인 및 사장님 로그인 API")
 @RestController
@@ -58,6 +60,16 @@ public class AuthController {
         response.setHeader("Authorization", "Bearer " + tokenDto.getAccessToken());
 
         return ApiResponse.ok(tokenDto);
+    }
+
+    @Operation(
+            summary = "로그아웃",
+            description = "현재 로그인된 유저의 Refresh Token을 삭제하여 로그아웃 처리"
+    )
+    @PostMapping("/logout")
+    public ApiResponse<Void> logout(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        authService.logout(customUserDetails.getUserId());
+        return ApiResponse.ok(null);
     }
 
     @Operation(

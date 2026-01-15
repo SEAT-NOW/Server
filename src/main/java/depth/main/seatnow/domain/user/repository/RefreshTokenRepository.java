@@ -27,7 +27,7 @@ public class RefreshTokenRepository {
         return Optional.ofNullable(token);
     }
 
-    public void delete(String socialId) {
-        redisTemplate.delete(socialId);
+    public void delete(String userId) {
+        redisTemplate.delete(userId);
     }
 }

@@ -45,7 +45,6 @@ public class BusinessRequest {
     private List<String> universityNames;
 
     @Schema(description = "매장 전화번호", example = "02-123-4567")
-    @NotBlank(message = "매장 전화번호는 필수입니다.")
     private String storePhone;
 
 }

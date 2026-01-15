@@ -63,7 +63,7 @@ public class Store extends BaseTimeEntity {
     @Builder.Default
     private List<String> universityNames = new ArrayList<>();
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private String storePhone; // 가게 연락처
 
     private String businessLicenseUrl; // 사업자등록증 파일 경로 (S3 URL)

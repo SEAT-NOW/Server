@@ -7,6 +7,7 @@ import depth.main.seatnow.domain.user.entity.User;
 import depth.main.seatnow.domain.user.entity.enums.Role;
 import depth.main.seatnow.domain.user.repository.RefreshTokenRepository;
 import depth.main.seatnow.domain.user.repository.UserRepository;
+import depth.main.seatnow.global.exception.custom.BadRequestException;
 import depth.main.seatnow.global.exception.custom.NotFoundException;
 import depth.main.seatnow.global.exception.custom.UnauthorizedException;
 import depth.main.seatnow.global.exception.error.ErrorCode;
@@ -15,6 +16,7 @@ import depth.main.seatnow.infrastructure.external.kakao.KakaoAuthClient;
 import depth.main.seatnow.infrastructure.external.kakao.KakaoUserClient;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,6 +32,9 @@ public class AuthService {
     private final JwtUtil jwtUtil;
     private final RefreshTokenRepository refreshTokenRepository;
     private final PasswordEncoder passwordEncoder;
+    private final StringRedisTemplate redisTemplate;
+    private final SmsVerificationService smsVerificationService;
+    private final EmailVerificationService emailVerificationService;
 
     @Value("${kakao.auth.client}")
     private String clientId;
@@ -88,6 +93,26 @@ public class AuthService {
 
         // 3. 토큰 생성 및 저장
         return createAndSaveTokens(user);
+    }
+
+    /**
+     * 휴대폰 번호로 이메일 찾기
+     */
+    public String findEmailByPhone(String phoneNumber) {
+        // 레디스에 인증 완료 증표가 있는지 확인
+        String isCompleted = redisTemplate.opsForValue().get("sms_completed:" + phoneNumber);
+
+        if (isCompleted == null) {
+            throw new BadRequestException(ErrorCode.EXPIRED_VERIFICATION_CODE, "인증 성공 증표를 찾을 수 없습니다."); // 인증 안 됐거나 만료됨
+        }
+
+        User user = userRepository.findByPhoneNumber(phoneNumber)
+                .orElseThrow(() -> new NotFoundException(ErrorCode.NOT_FOUND));
+
+        // 레디스에서 인증 완료 증표 삭제
+        redisTemplate.delete("sms_completed:" + phoneNumber);
+
+        return user.getEmail();
     }
 
     private KakaoDTO.KakaoProfile getKakaoProfile(String code) {

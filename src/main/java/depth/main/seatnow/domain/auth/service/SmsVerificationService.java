@@ -50,5 +50,8 @@ public class SmsVerificationService {
 
         // 인증 성공 시 삭제
         redisTemplate.delete("sms_verification:" + phoneNumber);
+
+        // 인증 완료 증표를 저장
+        redisTemplate.opsForValue().set("sms_completed:" + phoneNumber, "true", expiryTimeInMinutes, TimeUnit.MINUTES);
     }
 }

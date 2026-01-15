@@ -1,6 +1,7 @@
 package depth.main.seatnow.domain.auth.controller;
 
 import depth.main.seatnow.domain.auth.dto.request.OwnerLoginRequest;
+import depth.main.seatnow.domain.auth.dto.request.SmsSendRequest;
 import depth.main.seatnow.global.common.ApiResponse;
 import depth.main.seatnow.domain.auth.dto.response.AuthResponseDto;
 import depth.main.seatnow.domain.auth.service.AuthService;
@@ -101,5 +102,39 @@ public class AuthController {
         response.setHeader("Authorization", "Bearer " + tokenDto.getAccessToken());
 
         return ApiResponse.ok(tokenDto);
+    }
+
+    @Operation(
+            summary = "이메일 찾기 (최종 조회)",
+            description = "휴대폰 인증 성공 후 발급된 **'인증 완료 증표'**를 확인하여 가입된 이메일을 반환합니다. \n\n" +
+                    "**[주의]** 이 API 호출 전 반드시 `/verifications/sms/confirm`을 통해 인증 성공 기록을 생성해야 합니다."
+    )
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "200",
+                    description = "조회 성공",
+                    content = @Content(mediaType = "application/json",
+                            examples = @ExampleObject(value = "{\"success\": true, \"data\": \"seatnow@gmail.com\", \"message\": \"이메일 찾기에 성공하였습니다.\"}"))
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "400",
+                    description = "검증 실패",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    name = "인증 미완료 또는 시간초과",
+                                    value = "{\"code\": \"4003\", \"message\": \"인증 시간이 만료되었습니다. 다시 시도해주세요.\", \"detail\": \"인증 성공 증표를 찾을 수 없습니다.\"}"
+                            ))
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "404",
+                    description = "유저 없음",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(value = "{\"code\": \"4040\", \"message\": \"존재하지 않는 사용자입니다.\", \"detail\": null}"))
+            )
+    })
+    @PostMapping("/find-email")
+    public ApiResponse<String> findEmail(@Valid @RequestBody SmsSendRequest request) {
+        String email = authService.findEmailByPhone(request.getPhoneNumber());
+        return ApiResponse.ok(email, "이메일 찾기에 성공하였습니다.");
     }
 }

@@ -15,5 +15,12 @@ public class AuthResponseDto {
 
         @Schema(description = "리프레시 토큰", example = "eyJhbGciOiJIUzI1...")
         private String refreshToken;
+
+        @Schema(description = "사용자 고유 ID", example = "1")
+        private Long userId;
+
+        @Schema(description = "매장 고유 ID (사장님일 경우에만 반환)", example = "5")
+        private Long storeId;
+
     }
 }

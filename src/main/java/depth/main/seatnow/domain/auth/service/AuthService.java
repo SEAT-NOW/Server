@@ -3,6 +3,8 @@ package depth.main.seatnow.domain.auth.service;
 import depth.main.seatnow.domain.auth.dto.request.OwnerLoginRequest;
 import depth.main.seatnow.domain.auth.dto.response.AuthResponseDto;
 import depth.main.seatnow.domain.auth.dto.response.KakaoDTO;
+import depth.main.seatnow.domain.store.entity.store.Store;
+import depth.main.seatnow.domain.store.repository.StoreRepository;
 import depth.main.seatnow.domain.user.entity.User;
 import depth.main.seatnow.domain.user.entity.enums.Role;
 import depth.main.seatnow.domain.user.repository.RefreshTokenRepository;
@@ -38,6 +40,7 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final StringRedisTemplate redisTemplate;
     private final JavaMailSender mailSender;
+    private final StoreRepository storeRepository;
 
     @Value("${kakao.auth.client}")
     private String clientId;
@@ -74,12 +77,18 @@ public class AuthService {
             throw new UnauthorizedException(ErrorCode.NOT_FOUND);
         }
 
+        Long storeId = storeRepository.findByUserId(user.getId())
+                .map(Store::getId)
+                .orElse(null);
+
         String accessToken = jwtUtil.createAccessToken(String.valueOf(user.getId()), user.getRole().toString());
         String refreshToken = jwtUtil.createRefreshToken(String.valueOf(user.getId()));
 
         return AuthResponseDto.TokenDto.builder()
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
+                .userId(user.getId())
+                .storeId(storeId)
                 .build();
     }
 

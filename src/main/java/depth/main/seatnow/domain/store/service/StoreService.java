@@ -182,6 +182,14 @@ public class StoreService {
 
         return responseList;
     }
+    @Transactional
+    public void updateStorePhone(Long userId, String storePhone) {
+        Store store = storeRepository.findByUserId(userId)
+                .orElseThrow(() -> new NotFoundException(ErrorCode.STORE_NOT_FOUND));
+
+        // 가게 연락처 업데이트
+        store.updateStorePhone(storePhone);
+    }
     private void uploadAndMapImages(List<MultipartFile> storeImages, Store store) {
         for (int i = 0; i < storeImages.size(); i++) {
             MultipartFile imgFile = storeImages.get(i);
@@ -262,4 +270,6 @@ public class StoreService {
             return String.format("%.1fkm", meters / 1000.0);
         }
     }
+
+
 }

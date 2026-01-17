@@ -3,10 +3,10 @@ package depth.main.seatnow.domain.store.controller;
 import depth.main.seatnow.domain.store.dto.request.OwnerSignupRequest;
 import depth.main.seatnow.domain.store.dto.request.SpaceSeatUpdateRequest;
 import depth.main.seatnow.domain.store.dto.request.OwnerWithdrawRequest;
+import depth.main.seatnow.domain.store.dto.request.UpdateStorePhoneRequest;
 import depth.main.seatnow.domain.store.dto.response.SeatResponse;
 import depth.main.seatnow.domain.store.dto.response.SpaceSeatUpdateResponse;
 import depth.main.seatnow.domain.store.service.SeatService;
-import depth.main.seatnow.domain.store.dto.response.StoreListResponse;
 import depth.main.seatnow.domain.store.service.StoreService;
 import depth.main.seatnow.global.common.ApiResponse;
 import depth.main.seatnow.global.exception.error.ErrorResponse;
@@ -271,6 +271,48 @@ public class StoreController {
     ) {
         storeService.withdrawOwner(userDetails, request);
         return ApiResponse.ok(null, "사장님 회원탈퇴가 완료되었습니다.");
+    }
+
+    @Operation(
+            summary = "가게 연락처 수정 [인증 필요]",
+            description = "가게의 대표 연락처를 수정합니다.",
+            security = { @SecurityRequirement(name = "bearerAuth") }
+    )
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "200",
+                    description = "수정 성공",
+                    content = @Content(schema = @Schema(implementation = ApiResponse.class),
+                            examples = @ExampleObject(value = "{\"success\": true, \"data\": true, \"message\": \"가게 연락처가 성공적으로 수정되었습니다.\"}"))
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "400",
+                    description = "요청 데이터 오류",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    name = "입력값 누락",
+                                    value = "{\"code\": \"4000\", \"message\": \"잘못된 요청입니다.\", \"detail\": \"매장 전화번호를 입력해주세요.\"}"
+                            ))
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "404",
+                    description = "가게 정보를 찾을 수 없음",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    name = "가게 없음",
+                                    summary = "STORE_NOT_FOUND",
+                                    value = "{\"code\": \"4041\", \"message\": \"존재하지 않는 매장입니다.\", \"detail\": null}"
+                            ))
+            )
+    })
+    @PreAuthorize("hasRole('OWNER')")
+    @PatchMapping("/phone-number")
+    public ApiResponse<Boolean> updateStorePhone(
+            @Valid @RequestBody UpdateStorePhoneRequest request,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        storeService.updateStorePhone(userDetails.getUserId(), request.getStorePhone());
+        return ApiResponse.ok(true, "가게 연락처가 성공적으로 수정되었습니다.");
     }
 }
 

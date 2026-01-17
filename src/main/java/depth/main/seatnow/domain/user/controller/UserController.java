@@ -48,8 +48,10 @@ public class UserController {
     }
 
     @Operation(
-            summary = "비밀번호 확인",
-            description = "03-1-1마이페이지_계정정보 수정에서 현재 비밀번호가 일치하는지 확인합니다."
+            summary = "비밀번호 확인 [인증 필요]",
+            description = "03-1-1마이페이지_계정정보 수정에서 현재 비밀번호가 일치하는지 확인합니다.",
+            security = { @SecurityRequirement(name = "bearerAuth") }
+
     )
     @ApiResponses(value = {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(
@@ -82,8 +84,9 @@ public class UserController {
     }
 
     @Operation(
-            summary = "비밀번호 변경",
-            description = "로그인된 사용자의 비밀번호를 새 비밀번호로 변경합니다."
+            summary = "비밀번호 변경 [인증 필요]",
+            description = "로그인된 사용자의 비밀번호를 새 비밀번호로 변경합니다.",
+            security = { @SecurityRequirement(name = "bearerAuth") }
     )
     @ApiResponses(value = {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(

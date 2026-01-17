@@ -198,4 +198,8 @@ public class Store extends BaseTimeEntity {
     public void updateUsedSeatCount(int totalUsedSeats) {
         this.usedSeatCount = totalUsedSeats;
     }
+
+    public void updateStorePhone(String storePhone) {
+        this.storePhone = storePhone;
+    }
 }

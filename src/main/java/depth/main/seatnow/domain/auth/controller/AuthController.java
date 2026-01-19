@@ -31,11 +31,11 @@ public class AuthController {
 
     @Operation(
             summary = "카카오 로그인",
-            description = "카카오 인가 코드를 받아 액세스 토큰과 리프레시 토큰을 발급합니다."
+            description = "카카오 액세스 토큰을 받아 자체 액세스 토큰과 리프레시 토큰을 발급합니다."
     )
     @GetMapping("/login/kakao")
     public ApiResponse<AuthResponseDto.TokenDto> kakaoLogin(
-            @Parameter(description = "카카오에서 발급받은 인가 코드")
+            @Parameter(description = "카카오 토큰")
             @RequestParam("kakaoAccessToken") String kakaoAccessToken,
             HttpServletResponse response
     ) {

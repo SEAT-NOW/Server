@@ -56,6 +56,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST,"/api/v1/users/verify-password").hasRole("OWNER")
                         .requestMatchers(HttpMethod.PATCH,"/api/v1/users/password").hasRole("OWNER")
                         .requestMatchers(HttpMethod.PATCH,"api/v1/stores/phone-number").hasRole("OWNER")
+                        .requestMatchers(HttpMethod.PATCH,"api/v1/stores/layout").hasRole("OWNER")
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(new JwtAuthenticationFilter(jwtUtil, customUserDetailsService),

@@ -52,9 +52,9 @@ public class AuthService {
      * 카카오 로그인
      */
     @Transactional
-    public AuthResponseDto.TokenDto kakaoLogin(String code) {
-        // 1. 카카오 토큰 및 유저 정보 조회
-        KakaoDTO.KakaoProfile kakaoProfile = getKakaoProfile(code);
+    public AuthResponseDto.TokenDto kakaoLogin(String kakaoAccessToken) {
+        // 1. 카카오 유저 정보 조회
+        KakaoDTO.KakaoProfile kakaoProfile = kakaoUserClient.getUserInfo("Bearer " + kakaoAccessToken);
 
         // 2. 회원가입 or 로그인 (유저 조회/생성)
         User user = getOrCreateUser(kakaoProfile);

@@ -36,11 +36,11 @@ public class AuthController {
     @GetMapping("/login/kakao")
     public ApiResponse<AuthResponseDto.TokenDto> kakaoLogin(
             @Parameter(description = "카카오에서 발급받은 인가 코드")
-            @RequestParam("code") String code,
+            @RequestParam("kakaoAccessToken") String kakaoAccessToken,
             HttpServletResponse response
     ) {
         //서비스 호출 (토큰만 받아옴)
-        AuthResponseDto.TokenDto tokenDto = authService.kakaoLogin(code);
+        AuthResponseDto.TokenDto tokenDto = authService.kakaoLogin(kakaoAccessToken);
 
         //헤더에 jwt 토큰 세팅
         response.setHeader("Authorization", "Bearer " + tokenDto.getAccessToken());

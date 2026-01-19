@@ -1,9 +1,6 @@
 package depth.main.seatnow.domain.store.service;
 
-import depth.main.seatnow.domain.store.dto.request.OperationRequest;
-import depth.main.seatnow.domain.store.dto.request.OwnerSignupRequest;
-import depth.main.seatnow.domain.store.dto.request.OwnerWithdrawRequest;
-import depth.main.seatnow.domain.store.dto.request.SpaceRequest;
+import depth.main.seatnow.domain.store.dto.request.*;
 import depth.main.seatnow.domain.store.dto.response.SeatResponse;
 import depth.main.seatnow.domain.store.dto.response.StoreListResponse;
 import depth.main.seatnow.domain.store.entity.operation.OpeningHour;
@@ -182,6 +179,108 @@ public class StoreService {
 
         return responseList;
     }
+
+    public void verifyPassword(Long userId, String password) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException(ErrorCode.NOT_FOUND));
+
+        if (!passwordEncoder.matches(password, user.getPassword())) {
+            throw new BadRequestException(ErrorCode.PASSWORD_MISMATCH);
+        }
+    }
+
+    @Transactional
+    public void updatePassword(Long userId, String password) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException(ErrorCode.NOT_FOUND));
+
+        user.updatePassword(passwordEncoder.encode(password));
+    }
+
+    @Transactional
+    public void updateStorePhone(Long userId, String storePhone) {
+        Store store = storeRepository.findByUserId(userId)
+                .orElseThrow(() -> new NotFoundException(ErrorCode.STORE_NOT_FOUND));
+
+        // 가게 연락처 업데이트
+        store.updateStorePhone(storePhone);
+    }
+    @Transactional
+    public void updateSpaces(Long userId, List<SpaceUpdateRequest> request) {
+        Store store = storeRepository.findByUserId(userId)
+                .orElseThrow(() -> new NotFoundException(STORE_NOT_FOUND));
+
+        // 기존 공간(Space) 가져오기
+        List<Space> existingSpaces = store.getSpaces();
+
+        // 요청 데이터 Id들을 모아서 삭제될 대상 판별
+        List<Long> requestSpaceIds = request.stream()
+                .map(SpaceUpdateRequest::getId)
+                .filter(id -> id != null)
+                .toList();
+
+        // 요청에 없는 기존 공간 삭제
+        existingSpaces.removeIf(space -> !requestSpaceIds.contains(space.getId()));
+
+        // 공간 수정 및 추가
+        for(SpaceUpdateRequest spaceUpdateRequest : request){
+            if(spaceUpdateRequest.getId() != null){
+                Space space = existingSpaces.stream()
+                        .filter(s -> s.getId().equals(spaceUpdateRequest.getId()))
+                        .findFirst()
+                        .orElseThrow(() -> new NotFoundException(SPACE_NOT_FOUND));
+
+                space.updateName(spaceUpdateRequest.getName());
+                updateTableConfigs(space, spaceUpdateRequest.getTables());
+            } else{
+                // 신규 공간 생성
+                Space newSpace = Space.create(spaceUpdateRequest.getName(), store);
+                existingSpaces.add(newSpace);
+
+                spaceUpdateRequest.getTables().forEach(tableDto ->{
+                        TableConfig newTable = TableConfig.create(tableDto.getTableType(), tableDto.getTableCount(), newSpace);
+                        newSpace.getTableConfigs().add(newTable);
+                });
+
+            }
+        }
+
+    }
+
+    private void updateTableConfigs(Space space, List<SpaceUpdateRequest.TableUpdateDto> tables) {
+        List<TableConfig> existingTables = space.getTableConfigs();
+
+        // 요청에 없는 테이블 ID 삭제
+        List<Long> requestTableIds = tables.stream()
+                .map(SpaceUpdateRequest.TableUpdateDto::getId)
+                .filter(id -> id != null)
+                .toList();
+
+        existingTables.removeIf(table -> !requestTableIds.contains(table.getId()));
+
+        // 수정 및 추가
+        for (SpaceUpdateRequest.TableUpdateDto tableDto : tables) {
+            if (tableDto.getId() != null) {
+                // 기존 테이블 설정 업데이트
+                TableConfig table = existingTables.stream()
+                        .filter(t -> t.getId().equals(tableDto.getId()))
+                        .findFirst()
+                        .orElseThrow(() -> new NotFoundException(ErrorCode.TABLE_NOT_FOUND));
+
+                table.updateConfig(tableDto.getTableType(), tableDto.getTableCount());
+            } else {
+                // 신규 테이블 설정 생성
+                TableConfig newTable = TableConfig.create(
+                        tableDto.getTableType(),
+                        tableDto.getTableCount(),
+                        space
+                );
+                existingTables.add(newTable);
+            }
+        }
+
+    }
+
     private void uploadAndMapImages(List<MultipartFile> storeImages, Store store) {
         for (int i = 0; i < storeImages.size(); i++) {
             MultipartFile imgFile = storeImages.get(i);
@@ -262,4 +361,6 @@ public class StoreService {
             return String.format("%.1fkm", meters / 1000.0);
         }
     }
+
+
 }

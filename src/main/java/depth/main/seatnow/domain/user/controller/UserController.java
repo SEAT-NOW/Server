@@ -1,19 +1,22 @@
 package depth.main.seatnow.domain.user.controller;
 
+import depth.main.seatnow.domain.user.dto.request.VerifyPasswordRequest;
 import depth.main.seatnow.domain.user.service.UserService;
 import depth.main.seatnow.global.common.ApiResponse;
+import depth.main.seatnow.global.exception.error.ErrorResponse;
 import depth.main.seatnow.global.security.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "사용자 관리", description = "일반 사용자 관련 API")
 @RestController
@@ -43,4 +46,5 @@ public class UserController {
         userService.withdrawUser(userDetails);
         return ApiResponse.ok(null, "회원탈퇴가 완료되었습니다.");
     }
+
 }

@@ -39,4 +39,10 @@ public class TableConfig extends BaseTimeEntity {
     public void updateUsedCount(int usedCount) {
         this.usedCount = usedCount;
     }
+
+    public void updateConfig(Integer tableType, Integer tableCount) {
+        this.tableType = tableType;
+        this.tableCount = tableCount;
+
+    }
 }

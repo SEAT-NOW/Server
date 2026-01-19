@@ -23,7 +23,7 @@ public class AccountRequest {
     ) // 8자 이상 + 3종류 조합 정규식
     private String password;
 
-    @Schema(description = "사장님 개인 전화번호", example = "010-1234-5678")
+    @Schema(description = "사장님 개인 전화번호", example = "01012345678")
     @NotBlank(message = "전화번호는 필수 입력값입니다.")
     private String phoneNumber;
 }

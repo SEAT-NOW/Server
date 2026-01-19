@@ -35,4 +35,8 @@ public class Space {
                 .store(store)
                 .build();
     }
+
+    public void updateName(String name) {
+        this.name = name;
+    }
 }

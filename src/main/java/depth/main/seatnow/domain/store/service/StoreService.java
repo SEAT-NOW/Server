@@ -179,6 +179,24 @@ public class StoreService {
 
         return responseList;
     }
+
+    public void verifyPassword(Long userId, String password) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException(ErrorCode.NOT_FOUND));
+
+        if (!passwordEncoder.matches(password, user.getPassword())) {
+            throw new BadRequestException(ErrorCode.PASSWORD_MISMATCH);
+        }
+    }
+
+    @Transactional
+    public void updatePassword(Long userId, String password) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException(ErrorCode.NOT_FOUND));
+
+        user.updatePassword(passwordEncoder.encode(password));
+    }
+
     @Transactional
     public void updateStorePhone(Long userId, String storePhone) {
         Store store = storeRepository.findByUserId(userId)

@@ -5,6 +5,7 @@ import depth.main.seatnow.domain.store.dto.response.SeatResponse;
 import depth.main.seatnow.domain.store.dto.response.SpaceSeatUpdateResponse;
 import depth.main.seatnow.domain.store.service.SeatService;
 import depth.main.seatnow.domain.store.service.StoreService;
+import depth.main.seatnow.domain.user.dto.request.VerifyPasswordRequest;
 import depth.main.seatnow.global.common.ApiResponse;
 import depth.main.seatnow.global.exception.error.ErrorResponse;
 import depth.main.seatnow.global.security.CustomUserDetails;
@@ -315,7 +316,7 @@ public class StoreController {
 
     @Operation(
             summary = "매장 좌석 구성 정보 수정 [인증 필요]",
-            description = "Bearer 토큰 인증이 필요하며, 매장의 공간(층/구역) 이름과 전체 테이블 구성을 일괄 수정합니다. " +
+            description = "Bearer 토큰 인증이 필요하며, 03-3마이페이지_좌석 구성 정보 수정에서 매장의 공간(층/구역) 이름과 전체 테이블 구성을 일괄 수정합니다. " +
                     "ID가 포함된 항목은 수정, ID가 없는 항목은 신규 추가, 기존 리스트에서 누락된 항목은 삭제 처리됩니다.",
             security = { @SecurityRequirement(name = "bearerAuth") }
     )
@@ -357,6 +358,65 @@ public class StoreController {
         storeService.updateSpaces(userDetails.getUserId(), request);
 
         return ApiResponse.ok(true, "좌석 구성 정보가 성공적으로 수정되었습니다.");
+    }
+
+    @Operation(
+            summary = "비밀번호 확인 [인증 필요]",
+            description = "03-1-1마이페이지_계정정보 수정에서 현재 비밀번호가 일치하는지 확인합니다.",
+            security = { @SecurityRequirement(name = "bearerAuth") }
+
+    )
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "200",
+                    description = "확인 성공",
+                    content = @Content(schema = @Schema(implementation = ApiResponse.class),
+                            examples = @ExampleObject(value = "{\"success\": true, \"data\": true, \"message\": \"비밀번호 확인에 성공하였습니다.\"}"))
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "400",
+                    description = "비밀번호 불일치",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(value = "{\"code\": \"4005\", \"message\": \"유효하지 않은 비밀번호입니다.\", \"detail\": null}"))
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "404",
+                    description = "유저 없음",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(value = "{\"code\": \"4040\", \"message\": \"존재하지 않는 사용자입니다.\", \"detail\": null}"))
+            )
+    })
+    @PreAuthorize("hasRole('OWNER')")
+    @PostMapping("/owner/verify-password")
+    public ApiResponse<Boolean> verifyPassword(
+            @Valid @RequestBody VerifyPasswordRequest request,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        storeService.verifyPassword(userDetails.getUserId(), request.getPassword());
+        return ApiResponse.ok(true, "비밀번호 확인에 성공하였습니다.");
+    }
+
+    @Operation(
+            summary = "비밀번호 변경 [인증 필요]",
+            description = "로그인된 사용자의 비밀번호를 새 비밀번호로 변경합니다.",
+            security = { @SecurityRequirement(name = "bearerAuth") }
+    )
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "200",
+                    description = "수정 성공",
+                    content = @Content(schema = @Schema(implementation = ApiResponse.class),
+                            examples = @ExampleObject(value = "{\"success\": true, \"data\": true, \"message\": \"비밀번호가 성공적으로 수정되었습니다.\"}"))
+            )
+    })
+    @PreAuthorize("hasRole('OWNER')")
+    @PatchMapping("/owner/password")
+    public ApiResponse<Boolean> updatePassword(
+            @Valid @RequestBody VerifyPasswordRequest request,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        storeService.updatePassword(userDetails.getUserId(), request.getPassword());
+        return ApiResponse.ok(true, "비밀번호가 성공적으로 수정되었습니다.");
     }
 }
 

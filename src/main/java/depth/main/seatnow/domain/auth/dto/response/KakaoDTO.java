@@ -21,6 +21,7 @@ public class KakaoDTO {
         @NoArgsConstructor
         public static class KakaoAccount {
             private Profile profile;
+            private String email;
 
             @Getter
             @NoArgsConstructor

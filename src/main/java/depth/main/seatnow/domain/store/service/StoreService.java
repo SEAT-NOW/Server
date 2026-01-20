@@ -1,6 +1,12 @@
 package depth.main.seatnow.domain.store.service;
 
 import depth.main.seatnow.domain.store.dto.request.*;
+import depth.main.seatnow.domain.store.dto.request.signup.OperationRequest;
+import depth.main.seatnow.domain.store.dto.request.signup.OwnerSignupRequest;
+import depth.main.seatnow.domain.store.dto.request.signup.SpaceRequest;
+import depth.main.seatnow.domain.store.dto.request.update.OperationUpdateRequest;
+import depth.main.seatnow.domain.store.dto.request.update.SpaceUpdateRequest;
+import depth.main.seatnow.domain.store.dto.request.update.StorePhotoUpdateRequest;
 import depth.main.seatnow.domain.store.dto.response.SeatResponse;
 import depth.main.seatnow.domain.store.dto.response.StoreListResponse;
 import depth.main.seatnow.domain.store.entity.operation.OpeningHour;

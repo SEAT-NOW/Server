@@ -1,6 +1,8 @@
 package depth.main.seatnow.domain.store.controller;
 
 import depth.main.seatnow.domain.store.dto.request.*;
+import depth.main.seatnow.domain.store.dto.request.signup.OwnerSignupRequest;
+import depth.main.seatnow.domain.store.dto.request.update.*;
 import depth.main.seatnow.domain.store.dto.response.SeatResponse;
 import depth.main.seatnow.domain.store.dto.response.SpaceSeatUpdateResponse;
 import depth.main.seatnow.domain.store.service.SeatService;
@@ -306,7 +308,7 @@ public class StoreController {
     @PreAuthorize("hasRole('OWNER')")
     @PatchMapping("/phone-number")
     public ApiResponse<Boolean> updateStorePhone(
-            @Valid @RequestBody UpdateStorePhoneRequest request,
+            @Valid @RequestBody StorePhoneUpdateRequest request,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
         storeService.updateStorePhone(userDetails.getUserId(), request.getStorePhone());

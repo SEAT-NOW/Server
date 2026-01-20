@@ -1,4 +1,4 @@
-package depth.main.seatnow.domain.store.dto.request;
+package depth.main.seatnow.domain.store.dto.request.update;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;

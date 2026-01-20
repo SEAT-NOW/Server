@@ -1,4 +1,4 @@
-package depth.main.seatnow.domain.store.dto.request;
+package depth.main.seatnow.domain.store.dto.request.signup;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;

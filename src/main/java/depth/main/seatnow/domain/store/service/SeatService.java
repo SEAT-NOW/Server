@@ -1,6 +1,6 @@
 package depth.main.seatnow.domain.store.service;
 
-import depth.main.seatnow.domain.store.dto.request.SpaceSeatUpdateRequest;
+import depth.main.seatnow.domain.store.dto.request.update.SpaceSeatUpdateRequest;
 import depth.main.seatnow.domain.store.dto.response.SpaceSeatUpdateResponse;
 import depth.main.seatnow.domain.store.entity.seat.Space;
 import depth.main.seatnow.domain.store.entity.seat.TableConfig;

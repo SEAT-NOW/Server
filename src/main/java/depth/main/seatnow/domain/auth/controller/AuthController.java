@@ -43,7 +43,7 @@ public class AuthController {
         AuthResponseDto.TokenDto tokenDto = authService.kakaoLogin(kakaoAccessToken);
 
         //헤더에 jwt 토큰 세팅
-        response.setHeader("Authorization", "Bearer " + tokenDto.getAccessToken());
+        response.setHeader("Authorization", "Bearer" + tokenDto.getAccessToken());
 
         return ApiResponse.ok(tokenDto);
     }

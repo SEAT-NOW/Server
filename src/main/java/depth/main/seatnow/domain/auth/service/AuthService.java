@@ -207,6 +207,7 @@ public class AuthService {
         User newUser = User.builder()
                 .socialId(kakaoProfile.getId())
                 .nickname(kakaoProfile.getKakao_account().getProfile().getNickname())
+                .email(kakaoProfile.getKakao_account().getEmail())
                 .role(Role.USER)
                 .build();
         return userRepository.save(newUser);

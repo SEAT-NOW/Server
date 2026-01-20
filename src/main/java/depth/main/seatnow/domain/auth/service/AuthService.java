@@ -224,6 +224,7 @@ public class AuthService {
         return AuthResponseDto.TokenDto.builder()
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
+                .userId(user.getId())
                 .build();
     }
 

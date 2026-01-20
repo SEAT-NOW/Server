@@ -471,7 +471,7 @@ public class StoreController {
 
     @Operation(
             summary = "매장 사진 일괄 수정 [인증 필요]",
-            description = "매장의 새로운 사진을 추가 업로드합니다.\n\n" +
+            description = "04-3 가게 관리_매장 사진 관리에서 매장의 새로운 사진을 추가 업로드합니다.\n\n" +
                     "**[데이터 송신 규칙]**\n" +
                     "- **updateData**: 유지할 기존 사진의 ID와 대표 여부 정보 (JSON)\n" +
                     "- **newImages**: 새롭게 업로드할 이미지 파일 리스트 (File)\n\n" +

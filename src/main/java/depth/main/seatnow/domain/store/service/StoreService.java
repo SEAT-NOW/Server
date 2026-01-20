@@ -30,6 +30,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import static depth.main.seatnow.global.exception.error.ErrorCode.*;
 
@@ -245,6 +246,85 @@ public class StoreService {
             }
         }
 
+    }
+
+    @Transactional
+    public void updateOperationInfo(Long userId, OperationUpdateRequest request) {
+        Store store = storeRepository.findByUserId(userId)
+                .orElseThrow(() -> new NotFoundException(ErrorCode.STORE_NOT_FOUND));
+
+        // 1. 정기 휴무 업데이트
+        updateRegularHolidays(store, request.getRegularHolidays());
+        // 2. 임시 휴무 업데이트
+        updateTemporaryHolidays(store, request.getTemporaryHolidays());
+        // 3. 영업 시간 업데이트
+        updateOpeningHours(store, request.getHours());
+    }
+
+    private void updateOpeningHours(Store store, List<OperationUpdateRequest.OpeningHourUpdateDto> hours) {
+        List<OpeningHour> existing = store.getOpeningHours();
+        List<Long> requestIds = hours.stream()
+                .map(OperationUpdateRequest.OpeningHourUpdateDto::getId)
+                .filter(Objects::nonNull)
+                .toList();
+
+        existing.removeIf(h -> !requestIds.contains(h.getId()));
+
+        for (OperationUpdateRequest.OpeningHourUpdateDto dto : hours) {
+            if (dto.getId() != null) {
+                OpeningHour hour = existing.stream()
+                        .filter(h -> h.getId().equals(dto.getId()))
+                        .findFirst()
+                        .orElseThrow(() -> new NotFoundException(ErrorCode.OPENING_HOUR_NOT_FOUND));
+                hour.update(dto.getDayOfWeek(), dto.getStartTime(), dto.getEndTime());
+            } else {
+                existing.add(OpeningHour.create(dto.getDayOfWeek(), dto.getStartTime(), dto.getEndTime(), store));
+            }
+        }
+    }
+
+    private void updateTemporaryHolidays(Store store, List<OperationUpdateRequest.TemporaryHolidayUpdateDto> temporaryHolidays) {
+        List<TemporaryHoliday> existing = store.getTemporaryHolidays();
+        List<Long> requestIds = temporaryHolidays.stream()
+                .map(OperationUpdateRequest.TemporaryHolidayUpdateDto::getId)
+                .filter(Objects::nonNull)
+                .toList();
+
+        existing.removeIf(h -> !requestIds.contains(h.getId()));
+
+        for (OperationUpdateRequest.TemporaryHolidayUpdateDto dto : temporaryHolidays) {
+            if (dto.getId() != null) {
+                TemporaryHoliday holiday = existing.stream()
+                        .filter(h -> h.getId().equals(dto.getId()))
+                        .findFirst()
+                        .orElseThrow(() -> new NotFoundException(ErrorCode.HOLIDAY_NOT_FOUND));
+                holiday.update(dto.getStartDate(), dto.getEndDate());
+            } else {
+                existing.add(TemporaryHoliday.create(dto.getStartDate(), dto.getEndDate(), store));
+            }
+        }
+    }
+
+    private void updateRegularHolidays(Store store, List<OperationUpdateRequest.RegularHolidayUpdateDto> regularHolidays) {
+        List<RegularHoliday> existing = store.getRegularHolidays();
+        List<Long> requestIds = regularHolidays.stream()
+                .map(OperationUpdateRequest.RegularHolidayUpdateDto::getId)
+                .filter(Objects::nonNull)
+                .toList();
+
+        existing.removeIf(h -> !requestIds.contains(h.getId())); // 삭제
+
+        for (OperationUpdateRequest.RegularHolidayUpdateDto dto : regularHolidays) {
+            if (dto.getId() != null) { // 수정
+                RegularHoliday holiday = existing.stream()
+                        .filter(h -> h.getId().equals(dto.getId()))
+                        .findFirst()
+                        .orElseThrow(() -> new NotFoundException(ErrorCode.HOLIDAY_NOT_FOUND));
+                holiday.update(dto.getDayOfWeek(), dto.getWeekInfo());
+            } else {
+                existing.add(RegularHoliday.create(dto.getDayOfWeek(), dto.getWeekInfo(), store));
+            }
+        }
     }
 
     private void updateTableConfigs(Space space, List<SpaceUpdateRequest.TableUpdateDto> tables) {

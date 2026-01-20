@@ -418,5 +418,52 @@ public class StoreController {
         storeService.updatePassword(userDetails.getUserId(), request.getPassword());
         return ApiResponse.ok(true, "비밀번호가 성공적으로 수정되었습니다.");
     }
+
+    @Operation(
+            summary = "매장 운영 정보 수정 [인증 필요]",
+            description = "Bearer 토큰 인증이 필요하며, 04-1가게관리_영업정보 관리에서 사장님의 영업 시간, 정기 휴무, 임시 휴무 정보를 일괄 수정합니다." +
+            "ID가 포함된 항목은 수정, ID가 없는 항목은 신규 추가, 기존 리스트에서 누락된 항목은 삭제 처리됩니다.",
+            security = { @SecurityRequirement(name = "bearerAuth") }
+    )
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "200",
+                    description = "운영 정보 수정 성공",
+                    content = @Content(schema = @Schema(implementation = ApiResponse.class))
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "404",
+                    description = "존재하지 않는 리소스",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = {
+                                    @ExampleObject(
+                                            name = "매장 없음",
+                                            summary = "STORE_NOT_FOUND",
+                                            value = "{\"code\": \"4041\", \"message\": \"존재하지 않는 매장입니다.\", \"detail\": null}"
+                                    ),
+                                    @ExampleObject(
+                                            name = "영업시간 정보 없음",
+                                            summary = "OPENING_HOUR_NOT_FOUND",
+                                            value = "{\"code\": \"4044\", \"message\": \"존재하지 않는 영업시간입니다.\", \"detail\": null}"
+                                    ),
+                                    @ExampleObject(
+                                            name = "휴무 정보 없음",
+                                            summary = "HOLIDAY_NOT_FOUND",
+                                            value = "{\"code\": \"4045\", \"message\": \"존재하지 않는 임시휴무입니다.\", \"detail\": null}"
+                                    )
+                            }
+                    )
+            )
+    })
+    @PreAuthorize("hasRole('OWNER')")
+    @PatchMapping("/operation")
+    public ApiResponse<Boolean> updateOperationInfo(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestBody @Valid OperationUpdateRequest request) {
+
+        storeService.updateOperationInfo(userDetails.getUserId(), request);
+        return ApiResponse.ok(true, "매장 운영 정보가 성공적으로 수정되었습니다.");
+    }
 }
 

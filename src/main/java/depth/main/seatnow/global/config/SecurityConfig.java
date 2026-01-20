@@ -52,7 +52,11 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/v1/stores/{storeId}/seats").hasRole("OWNER")
                         .requestMatchers(HttpMethod.PATCH, "/api/v1/stores/seats").hasRole("OWNER")
                         .requestMatchers(HttpMethod.DELETE, "/api/v1/users").hasRole("USER")
-                        .requestMatchers(HttpMethod.DELETE, "api/v1/stores/owner").hasRole("OWNER")
+                        .requestMatchers(HttpMethod.DELETE, "/api/v1/stores/owner").hasRole("OWNER")
+                        .requestMatchers(HttpMethod.POST,"/api/v1/stores/owner/verify-password").hasRole("OWNER")
+                        .requestMatchers(HttpMethod.PATCH,"/api/v1/stores/owner/password").hasRole("OWNER")
+                        .requestMatchers(HttpMethod.PATCH,"/api/v1/stores/phone-number").hasRole("OWNER")
+                        .requestMatchers(HttpMethod.PATCH,"/api/v1/stores/layout").hasRole("OWNER")
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(new JwtAuthenticationFilter(jwtUtil, customUserDetailsService),

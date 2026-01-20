@@ -261,6 +261,58 @@ public class StoreService {
         updateOpeningHours(store, request.getHours());
     }
 
+    @Transactional
+    public void updateStoreImages(Long userId, StorePhotoUpdateRequest request, List<MultipartFile> newImages) {
+        Store store = storeRepository.findByUserId(userId)
+                .orElseThrow(() -> new NotFoundException(ErrorCode.STORE_NOT_FOUND));
+
+        List<StoreImage> currentImages = store.getImages();
+
+        // 1. 삭제: 요청 리스트에 없는 기존 이미지는 S3와 DB에서 제거
+        List<Long> keepIds = request.getExistingImages().stream()
+                .map(StorePhotoUpdateRequest.ExistingImageDto::getId)
+                .toList();
+
+        List<StoreImage> toDelete = currentImages.stream()
+                .filter(img -> !keepIds.contains(img.getId()))
+                .toList();
+
+        toDelete.forEach(img -> s3UploadService.deleteFile(img.getImageUrl()));
+        currentImages.removeAll(toDelete);
+
+        // 2. 수정: 기존 이미지 중 대표 설정값이 변한 경우만 업데이트
+        for (StorePhotoUpdateRequest.ExistingImageDto dto : request.getExistingImages()) {
+            currentImages.stream()
+                    .filter(img -> img.getId().equals(dto.getId()))
+                    .findFirst()
+                    .ifPresent(img -> {
+                        if (img.isMain() != dto.isMain()) {
+                            img.updateMain(dto.isMain());
+                        }
+                    });
+        }
+
+        // 3. 현재 살아남은 사진들 중 대표 사진이 있는지 체크
+        boolean hasMainImage = currentImages.stream()
+                .anyMatch(StoreImage::isMain);
+
+        // 4. 추가: 신규 사진 업로드 및 대표 우선순위 적용
+        if (newImages != null && !newImages.isEmpty()) {
+            for (int i = 0; i < newImages.size(); i++) {
+                MultipartFile file = newImages.get(i);
+
+                if (file != null && !file.isEmpty()) {
+                    String url = s3UploadService.uploadFileToPath(file, "permanent/store");
+                    boolean shouldBeMain = (!hasMainImage && i == 0);
+                    currentImages.add(StoreImage.create(url, shouldBeMain, store));
+                    if (shouldBeMain) {
+                        hasMainImage = true;
+                    }
+                }
+            }
+        }
+    }
+
     private void updateOpeningHours(Store store, List<OperationUpdateRequest.OpeningHourUpdateDto> hours) {
         List<OpeningHour> existing = store.getOpeningHours();
         List<Long> requestIds = hours.stream()
@@ -441,6 +493,7 @@ public class StoreService {
             return String.format("%.1fkm", meters / 1000.0);
         }
     }
+
 
 
 }

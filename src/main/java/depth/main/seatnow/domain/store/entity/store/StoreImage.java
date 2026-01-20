@@ -29,4 +29,8 @@ public class StoreImage {
                 .store(store)
                 .build();
     }
+
+    public void updateMain(boolean main) {
+        this.isMain = main;
+    }
 }

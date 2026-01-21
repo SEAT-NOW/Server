@@ -9,6 +9,7 @@ import depth.main.seatnow.domain.store.dto.request.update.SpaceUpdateRequest;
 import depth.main.seatnow.domain.store.dto.request.update.StorePhotoUpdateRequest;
 import depth.main.seatnow.domain.store.dto.response.SeatResponse;
 import depth.main.seatnow.domain.store.dto.response.StoreListResponse;
+import depth.main.seatnow.domain.store.entity.menu.MenuCategory;
 import depth.main.seatnow.domain.store.entity.operation.OpeningHour;
 import depth.main.seatnow.domain.store.entity.operation.RegularHoliday;
 import depth.main.seatnow.domain.store.entity.operation.TemporaryHoliday;
@@ -93,6 +94,9 @@ public class StoreService {
         // 부가 정보 매핑
         mapOperations(request.getOperation(), store);
         mapLayouts(request.getLayout(), store);
+
+        // 기본 메뉴 카테고리 생성
+        createDefaultCategories(store);
 
         // 매장 이미지 일괄 업로드 및 매핑
         if (storeImages != null && !storeImages.isEmpty()) {
@@ -317,6 +321,19 @@ public class StoreService {
                 }
             }
         }
+    }
+
+    private void createDefaultCategories(Store store) {
+        List<String> defaultNames = List.of("메인 메뉴", "사이드 메뉴", "주류");
+
+        defaultNames.forEach(name ->{
+            MenuCategory category = MenuCategory.builder()
+                    .name(name)
+                    .store(store)
+                    .build();
+
+            store.getMenuCategories().add(category);
+        });
     }
 
     private void updateOpeningHours(Store store, List<OperationUpdateRequest.OpeningHourUpdateDto> hours) {

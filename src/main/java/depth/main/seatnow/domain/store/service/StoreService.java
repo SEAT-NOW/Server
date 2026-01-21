@@ -344,10 +344,12 @@ public class StoreService {
         for (MenuCategoryUpdateRequest.CategoryDto dto : request.getCategories()) {
             if (dto.getId() != null) {
                 // 수정: 기존 ID가 있으면 이름 업데이트
-                currentCategories.stream()
+                MenuCategory category = currentCategories.stream()
                         .filter(cat -> cat.getId().equals(dto.getId()))
                         .findFirst()
-                        .ifPresent(cat -> cat.updateName(dto.getName()));
+                        .orElseThrow(() -> new NotFoundException(ErrorCode.CATEGORY_NOT_FOUND));
+
+                category.updateName(dto.getName());
             } else {
                 // 추가: ID가 없으면 신규 생성 후 리스트에 추가
                 currentCategories.add(MenuCategory.builder()

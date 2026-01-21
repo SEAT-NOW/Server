@@ -514,5 +514,20 @@ public class StoreController {
         storeService.updateStoreImages(userDetails.getUserId(), request, newImages);
         return ApiResponse.ok(true, "매장 사진이 성공적으로 수정되었습니다.");
     }
+
+    @Operation(
+            summary = "메뉴 카테고리 일괄 편집 [인증 필요]",
+            description = "04-2-1 메뉴 카테고리 편집에서 기존 카테고리 수정/삭제 및 신규 카테고리를 추가합니다.\n\n" +
+                    "**주의**: 카테고리 삭제 시 해당 카테고리에 속한 메뉴도 모두 삭제됩니다."
+    )
+    @PatchMapping("/menu-categories")
+    @PreAuthorize("hasRole('OWNER')")
+    public ApiResponse<Boolean> updateMenuCategories(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestBody @Valid MenuCategoryUpdateRequest request
+    ) {
+        storeService.updateMenuCategories(userDetails.getUserId(), request);
+        return ApiResponse.ok(true, "메뉴 카테고리가 성공적으로 수정되었습니다.");
+    }
 }
 

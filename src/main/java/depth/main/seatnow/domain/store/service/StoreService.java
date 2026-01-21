@@ -4,6 +4,7 @@ import depth.main.seatnow.domain.store.dto.request.*;
 import depth.main.seatnow.domain.store.dto.request.signup.OperationRequest;
 import depth.main.seatnow.domain.store.dto.request.signup.OwnerSignupRequest;
 import depth.main.seatnow.domain.store.dto.request.signup.SpaceRequest;
+import depth.main.seatnow.domain.store.dto.request.update.MenuCategoryUpdateRequest;
 import depth.main.seatnow.domain.store.dto.request.update.OperationUpdateRequest;
 import depth.main.seatnow.domain.store.dto.request.update.SpaceUpdateRequest;
 import depth.main.seatnow.domain.store.dto.request.update.StorePhotoUpdateRequest;
@@ -319,6 +320,38 @@ public class StoreService {
                         hasMainImage = true;
                     }
                 }
+            }
+        }
+    }
+    @Transactional
+    public void updateMenuCategories(Long userId, MenuCategoryUpdateRequest request) {
+        Store store = storeRepository.findByUserId(userId)
+                .orElseThrow(() -> new NotFoundException(ErrorCode.STORE_NOT_FOUND));
+
+        List<MenuCategory> currentCategories = store.getMenuCategories();
+
+        // 1. 삭제: 요청에 없는 기존 카테고리 식별 및 제거
+        List<Long> keepIds = request.getCategories().stream()
+                .map(MenuCategoryUpdateRequest.CategoryDto::getId)
+                .filter(Objects::nonNull)
+                .toList();
+
+        currentCategories.removeIf(category -> !keepIds.contains(category.getId()));
+
+        // 2. 수정 및 추가
+        for (MenuCategoryUpdateRequest.CategoryDto dto : request.getCategories()) {
+            if (dto.getId() != null) {
+                // 수정: 기존 ID가 있으면 이름 업데이트
+                currentCategories.stream()
+                        .filter(cat -> cat.getId().equals(dto.getId()))
+                        .findFirst()
+                        .ifPresent(cat -> cat.updateName(dto.getName()));
+            } else {
+                // 추가: ID가 없으면 신규 생성 후 리스트에 추가
+                currentCategories.add(MenuCategory.builder()
+                        .name(dto.getName())
+                        .store(store)
+                        .build());
             }
         }
     }

@@ -28,6 +28,8 @@ public enum ErrorCode {
     SPACE_NOT_FOUND(HttpStatus.NOT_FOUND,"4043", "매장에 존재하지 않는 공간입니다."),
     OPENING_HOUR_NOT_FOUND(HttpStatus.NOT_FOUND,"4044", "존재하지 않는 영업시간입니다."),
     HOLIDAY_NOT_FOUND(HttpStatus.NOT_FOUND, "4045", "존재하지 않는 임시휴무입니다."),
+    CATEGORY_NOT_FOUND(HttpStatus.NOT_FOUND, "4046", "존재하지 않는 메뉴 카테고리입니다."),
+    MENU_NOT_FOUND(HttpStatus.NOT_FOUND,"4047","존재하지 않는 메뉴입니다."),
 
     CONFLICT(HttpStatus.CONFLICT, "4090", "이미 존재하는 리소스입니다."),
     DUPLICATE_EMAIL(HttpStatus.CONFLICT, "4091", "이미 가입된 이메일입니다."),

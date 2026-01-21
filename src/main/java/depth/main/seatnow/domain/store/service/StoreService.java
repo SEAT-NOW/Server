@@ -4,12 +4,10 @@ import depth.main.seatnow.domain.store.dto.request.*;
 import depth.main.seatnow.domain.store.dto.request.signup.OperationRequest;
 import depth.main.seatnow.domain.store.dto.request.signup.OwnerSignupRequest;
 import depth.main.seatnow.domain.store.dto.request.signup.SpaceRequest;
-import depth.main.seatnow.domain.store.dto.request.update.MenuCategoryUpdateRequest;
-import depth.main.seatnow.domain.store.dto.request.update.OperationUpdateRequest;
-import depth.main.seatnow.domain.store.dto.request.update.SpaceUpdateRequest;
-import depth.main.seatnow.domain.store.dto.request.update.StorePhotoUpdateRequest;
+import depth.main.seatnow.domain.store.dto.request.update.*;
 import depth.main.seatnow.domain.store.dto.response.SeatResponse;
 import depth.main.seatnow.domain.store.dto.response.StoreListResponse;
+import depth.main.seatnow.domain.store.entity.menu.Menu;
 import depth.main.seatnow.domain.store.entity.menu.MenuCategory;
 import depth.main.seatnow.domain.store.entity.operation.OpeningHour;
 import depth.main.seatnow.domain.store.entity.operation.RegularHoliday;
@@ -18,6 +16,8 @@ import depth.main.seatnow.domain.store.entity.seat.Space;
 import depth.main.seatnow.domain.store.entity.seat.TableConfig;
 import depth.main.seatnow.domain.store.entity.store.Store;
 import depth.main.seatnow.domain.store.entity.store.StoreImage;
+import depth.main.seatnow.domain.store.repository.MenuCategoryRepository;
+import depth.main.seatnow.domain.store.repository.MenuRepository;
 import depth.main.seatnow.domain.store.repository.StoreRepository;
 import depth.main.seatnow.domain.user.entity.User;
 import depth.main.seatnow.domain.user.entity.enums.Role;
@@ -50,6 +50,8 @@ public class StoreService {
     private final StoreRepository storeRepository;
     private final S3UploadService s3UploadService;
     private final PasswordEncoder passwordEncoder;
+    private final MenuCategoryRepository menuCategoryRepository;
+    private final MenuRepository menuRepository;
 
     @Transactional
     public Long registerOwner(OwnerSignupRequest request, MultipartFile licenseImage, List<MultipartFile> storeImages) {
@@ -355,7 +357,49 @@ public class StoreService {
             }
         }
     }
+    @Transactional
+    public void saveOrUpdateMenu(Long userId, MenuUpdateRequest request, MultipartFile menuImage) {
+        Store store = storeRepository.findByUserId(userId)
+                .orElseThrow(() -> new NotFoundException(ErrorCode.STORE_NOT_FOUND));
 
+        MenuCategory category = menuCategoryRepository.findById(request.getCategoryId())
+                .orElseThrow(() -> new NotFoundException(ErrorCode.CATEGORY_NOT_FOUND));
+
+        if(request.getId() == null){
+            // 신규 등록
+            String imageUrl = null;
+            if(menuImage != null && !menuImage.isEmpty()){
+                imageUrl = s3UploadService.uploadFileToPath(menuImage, "permanent/menu");
+            }
+
+            Menu newMenu = Menu.builder()
+                    .name(request.getName())
+                    .price(request.getPrice())
+                    .imageUrl(imageUrl)
+                    .menuCategory(category)
+                    .build();
+            menuRepository.save(newMenu);
+        }else {
+            // 기존 수정
+            Menu menu = menuRepository.findById(request.getId())
+                    .orElseThrow(() -> new NotFoundException(ErrorCode.MENU_NOT_FOUND));
+
+            // 사진 처리 로직
+            String currentImageUrl = menu.getImageUrl();
+            if(menuImage != null && !menuImage.isEmpty()){
+                // 새로운 사진이 들어온 경우: 기존 S3 파일 삭제 후 업로드
+                if(currentImageUrl != null){
+                    s3UploadService.deleteFile(currentImageUrl);
+                }
+                currentImageUrl = s3UploadService.uploadFileToPath(menuImage,"permanent/menu");
+            }else if(!request.isKeepImage() && currentImageUrl != null){
+                s3UploadService.deleteFile(currentImageUrl);
+                currentImageUrl = null;
+            }
+
+            menu.updateMenuDetails(request.getName(), request.getPrice(), currentImageUrl, category);
+        }
+    }
     private void createDefaultCategories(Store store) {
         List<String> defaultNames = List.of("메인 메뉴", "사이드 메뉴", "주류");
 

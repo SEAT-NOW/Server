@@ -529,5 +529,22 @@ public class StoreController {
         storeService.updateMenuCategories(userDetails.getUserId(), request);
         return ApiResponse.ok(true, "메뉴 카테고리가 성공적으로 수정되었습니다.");
     }
+
+    @Operation(
+            summary = "메뉴 등록 및 상세 수정 [인증 필요]",
+            description = "04-2-2메뉴 상세 편집에서 새로운 메뉴를 등록하거나 기존 메뉴 정보를 수정합니다.\n\n" +
+                    "- **신규 등록**: id를 null로 보냅니다.\n" +
+                    "- **정보 수정**: 해당 메뉴의 id를 포함하여 보냅니다."
+    )
+    @PostMapping(value = "/menus", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize("hasRole('OWNER')")
+    public ApiResponse<Boolean> saveOrUpdateMenu(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestPart("menuData") @Valid MenuUpdateRequest request,
+            @RequestPart(value = "menuImage", required = false) MultipartFile menuImage
+    ) {
+        storeService.saveOrUpdateMenu(userDetails.getUserId(), request, menuImage);
+        return ApiResponse.ok(true, "메뉴 정보가 성공적으로 반영되었습니다.");
+    }
 }
 

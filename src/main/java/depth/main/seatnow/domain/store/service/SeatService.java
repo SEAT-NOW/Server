@@ -1,6 +1,7 @@
 package depth.main.seatnow.domain.store.service;
 
 import depth.main.seatnow.domain.store.dto.request.update.SpaceSeatUpdateRequest;
+import depth.main.seatnow.domain.store.dto.response.SeatResponse;
 import depth.main.seatnow.domain.store.dto.response.SpaceSeatUpdateResponse;
 import depth.main.seatnow.domain.store.entity.seat.Space;
 import depth.main.seatnow.domain.store.entity.seat.TableConfig;
@@ -12,13 +13,13 @@ import depth.main.seatnow.global.exception.custom.ForbiddenException;
 import depth.main.seatnow.global.exception.custom.NotFoundException;
 import depth.main.seatnow.global.exception.error.ErrorCode;
 import depth.main.seatnow.global.security.CustomUserDetails;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-@org.springframework.transaction.annotation.Transactional(readOnly = true)
+@Transactional(readOnly = true)
 public class SeatService {
     private final StoreRepository storeRepository;
     private final TableConfigRepository tableConfigRepository;
@@ -78,4 +79,19 @@ public class SeatService {
 
         return SpaceSeatUpdateResponse.from(store);
     }
+
+    @Transactional
+    public SeatResponse getStoreSeatStatus(Long storeId, CustomUserDetails userDetails) {
+        // 매장 조회
+        Store store = storeRepository.findById(storeId)
+                .orElseThrow(() -> new NotFoundException(ErrorCode.STORE_NOT_FOUND));
+
+        // 매장의 주인이 로그인한 사장님이 맞는지 확인!
+        if (!store.getUser().getId().equals(userDetails.getUserId())) {
+            throw new ForbiddenException(ErrorCode.FORBIDDEN);
+        }
+
+        return SeatResponse.from(store);
+    }
+
 }

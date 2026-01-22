@@ -2,6 +2,7 @@ package depth.main.seatnow.domain.store.controller;
 
 import depth.main.seatnow.domain.store.dto.request.update.MenuCategoryUpdateRequest;
 import depth.main.seatnow.domain.store.dto.request.update.MenuUpdateRequest;
+import depth.main.seatnow.domain.store.dto.response.StoreMenuResponse;
 import depth.main.seatnow.domain.store.service.StoreMenuService;
 import depth.main.seatnow.global.common.ApiResponse;
 import depth.main.seatnow.global.security.CustomUserDetails;
@@ -106,7 +107,7 @@ public class StoreMenuController {
                     )
             )
     })
-    @PostMapping(value = "/details", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasRole('OWNER')")
     public ApiResponse<Boolean> saveOrUpdateMenu(
             @AuthenticationPrincipal CustomUserDetails userDetails,
@@ -124,5 +125,40 @@ public class StoreMenuController {
     ) {
         storeMenuService.saveOrUpdateMenu(userDetails.getUserId(), request, menuImage);
         return ApiResponse.ok(true, "메뉴 정보가 성공적으로 반영되었습니다.");
+    }
+
+    @Operation(
+            summary = "매장 메뉴 정보 조회 [인증 필요]",
+            description = "04 가게 관리_상세페이지 관리 화면에서 카테고리별 메뉴 정보를 조회합니다.",
+            security = { @SecurityRequirement(name = "bearerAuth") }
+    )
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "200",
+                    description = "조회 성공",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = StoreMenuResponse.class)
+                    )
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "404",
+                    description = "매장 정보를 찾을 수 없음",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = @ExampleObject(
+                                    name = "매장 없음",
+                                    value = "{\"code\": \"4041\", \"message\": \"존재하지 않는 매장입니다.\", \"detail\": null}"
+                            )
+                    )
+            )
+    })
+    @PreAuthorize("hasRole('OWNER')")
+    @GetMapping
+    public ApiResponse<StoreMenuResponse> getStoreMenus(
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        StoreMenuResponse response = storeMenuService.getStoreMenus(userDetails.getUserId());
+        return ApiResponse.ok(response, "매장 메뉴 정보를 성공적으로 조회하였습니다.");
     }
 }

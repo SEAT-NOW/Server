@@ -2,6 +2,7 @@ package depth.main.seatnow.domain.store.service;
 
 import depth.main.seatnow.domain.store.dto.request.update.MenuCategoryUpdateRequest;
 import depth.main.seatnow.domain.store.dto.request.update.MenuUpdateRequest;
+import depth.main.seatnow.domain.store.dto.response.StoreMenuResponse;
 import depth.main.seatnow.domain.store.entity.menu.Menu;
 import depth.main.seatnow.domain.store.entity.menu.MenuCategory;
 import depth.main.seatnow.domain.store.entity.store.Store;
@@ -105,5 +106,12 @@ public class StoreMenuService {
 
             menu.updateMenuDetails(request.getName(), request.getPrice(), currentImageUrl, category);
         }
+    }
+
+    public StoreMenuResponse getStoreMenus(Long userId) {
+        Store store = storeRepository.findByUserId(userId)
+                .orElseThrow(() -> new NotFoundException(ErrorCode.STORE_NOT_FOUND));
+
+        return StoreMenuResponse.of(store.getMenuCategories());
     }
 }

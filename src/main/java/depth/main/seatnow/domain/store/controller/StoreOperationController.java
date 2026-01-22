@@ -3,6 +3,7 @@ package depth.main.seatnow.domain.store.controller;
 import depth.main.seatnow.domain.store.dto.request.update.OperationUpdateRequest;
 import depth.main.seatnow.domain.store.dto.request.update.StorePhoneUpdateRequest;
 import depth.main.seatnow.domain.store.dto.request.update.StorePhotoUpdateRequest;
+import depth.main.seatnow.domain.store.dto.response.OperationInfoResponse;
 import depth.main.seatnow.domain.store.service.StoreOperationService;
 import depth.main.seatnow.global.common.ApiResponse;
 import depth.main.seatnow.global.exception.error.ErrorResponse;
@@ -166,5 +167,40 @@ public class StoreOperationController {
     ) {
         storeOperationService.updateStoreImages(userDetails.getUserId(), request, newImages);
         return ApiResponse.ok(true, "매장 사진이 성공적으로 수정되었습니다.");
+    }
+
+    @Operation(
+            summary = "매장 운영 정보 조회 [인증 필요]",
+            description = "04-1 가게관리_영업정보 관리 화면에 필요한 모든 운영 정보를 조회합니다.",
+            security = { @SecurityRequirement(name = "bearerAuth") }
+    )
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "200",
+                    description = "조회 성공",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = OperationInfoResponse.class)
+                    )
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "404",
+                    description = "매장 정보를 찾을 수 없음",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = @ExampleObject(
+                                    name = "매장 없음",
+                                    value = "{\"code\": \"4041\", \"message\": \"존재하지 않는 매장입니다.\", \"detail\": null}"
+                            )
+                    )
+            )
+    })
+    @PreAuthorize("hasRole('OWNER')")
+    @GetMapping
+    public ApiResponse<OperationInfoResponse> getOperationInfo(
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        OperationInfoResponse response = storeOperationService.getOperationInfo(userDetails.getUserId());
+        return ApiResponse.ok(response, "매장 운영 정보를 성공적으로 조회하였습니다.");
     }
 }

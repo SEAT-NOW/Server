@@ -2,19 +2,17 @@ package depth.main.seatnow.domain.store.service;
 
 import depth.main.seatnow.domain.store.dto.request.update.OperationUpdateRequest;
 import depth.main.seatnow.domain.store.dto.request.update.StorePhotoUpdateRequest;
+import depth.main.seatnow.domain.store.dto.response.OperationInfoResponse;
 import depth.main.seatnow.domain.store.entity.operation.OpeningHour;
 import depth.main.seatnow.domain.store.entity.operation.RegularHoliday;
 import depth.main.seatnow.domain.store.entity.operation.TemporaryHoliday;
 import depth.main.seatnow.domain.store.entity.store.Store;
 import depth.main.seatnow.domain.store.entity.store.StoreImage;
-import depth.main.seatnow.domain.store.repository.MenuCategoryRepository;
-import depth.main.seatnow.domain.store.repository.MenuRepository;
 import depth.main.seatnow.domain.store.repository.StoreRepository;
 import depth.main.seatnow.global.exception.custom.NotFoundException;
 import depth.main.seatnow.global.exception.error.ErrorCode;
 import depth.main.seatnow.infrastructure.external.s3.S3UploadService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -101,6 +99,13 @@ public class StoreOperationService {
                 }
             }
         }
+    }
+
+    public OperationInfoResponse getOperationInfo(Long userId) {
+        Store store = storeRepository.findByUserId(userId)
+                .orElseThrow(() -> new NotFoundException(ErrorCode.STORE_NOT_FOUND));
+
+        return OperationInfoResponse.of(store);
     }
 
     private void updateRegularHolidays(Store store, List<OperationUpdateRequest.RegularHolidayUpdateDto> regularHolidays) {

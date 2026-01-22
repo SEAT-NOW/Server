@@ -3,6 +3,7 @@ package depth.main.seatnow.domain.store.service;
 import depth.main.seatnow.domain.store.dto.request.update.OperationUpdateRequest;
 import depth.main.seatnow.domain.store.dto.request.update.StorePhotoUpdateRequest;
 import depth.main.seatnow.domain.store.dto.response.OperationInfoResponse;
+import depth.main.seatnow.domain.store.dto.response.StorePhotoResponse;
 import depth.main.seatnow.domain.store.entity.operation.OpeningHour;
 import depth.main.seatnow.domain.store.entity.operation.RegularHoliday;
 import depth.main.seatnow.domain.store.entity.operation.TemporaryHoliday;
@@ -106,6 +107,13 @@ public class StoreOperationService {
                 .orElseThrow(() -> new NotFoundException(ErrorCode.STORE_NOT_FOUND));
 
         return OperationInfoResponse.of(store);
+    }
+
+    public StorePhotoResponse getStoreImages(Long userId) {
+        Store store = storeRepository.findByUserId(userId)
+                .orElseThrow(() -> new NotFoundException(ErrorCode.STORE_NOT_FOUND));
+
+        return StorePhotoResponse.of(store.getImages());
     }
 
     private void updateRegularHolidays(Store store, List<OperationUpdateRequest.RegularHolidayUpdateDto> regularHolidays) {

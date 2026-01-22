@@ -60,6 +60,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PATCH,"/api/v1/stores/operation").hasRole("OWNER")
                         .requestMatchers(HttpMethod.GET,"/api/v1/stores/operation").hasRole("OWNER")
                         .requestMatchers(HttpMethod.PATCH,"/api/v1/stores/operation/images").hasRole("OWNER")
+                        .requestMatchers(HttpMethod.GET,"/api/v1/stores/operation/images").hasRole("OWNER")
                         .requestMatchers(HttpMethod.PATCH, "/api/v1/stores/menu/categories").hasRole("OWNER")
                         .requestMatchers(HttpMethod.POST,"/api/v1/stores/menus/details").hasRole("OWNER")
                         .anyRequest().authenticated()

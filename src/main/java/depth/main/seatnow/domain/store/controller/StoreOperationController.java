@@ -4,6 +4,7 @@ import depth.main.seatnow.domain.store.dto.request.update.OperationUpdateRequest
 import depth.main.seatnow.domain.store.dto.request.update.StorePhoneUpdateRequest;
 import depth.main.seatnow.domain.store.dto.request.update.StorePhotoUpdateRequest;
 import depth.main.seatnow.domain.store.dto.response.OperationInfoResponse;
+import depth.main.seatnow.domain.store.dto.response.StorePhotoResponse;
 import depth.main.seatnow.domain.store.service.StoreOperationService;
 import depth.main.seatnow.global.common.ApiResponse;
 import depth.main.seatnow.global.exception.error.ErrorResponse;
@@ -202,5 +203,40 @@ public class StoreOperationController {
     ) {
         OperationInfoResponse response = storeOperationService.getOperationInfo(userDetails.getUserId());
         return ApiResponse.ok(response, "매장 운영 정보를 성공적으로 조회하였습니다.");
+    }
+
+    @Operation(
+            summary = "매장 사진 조회 [인증 필요]",
+            description = "04-3 가게 관리_매장 사진 관리 화면에서 현재 등록된 사진 리스트를 조회합니다.",
+            security = { @SecurityRequirement(name = "bearerAuth") }
+    )
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "200",
+                    description = "조회 성공",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = StorePhotoResponse.class)
+                    )
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "404",
+                    description = "매장 정보를 찾을 수 없음",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = @ExampleObject(
+                                    name = "매장 없음",
+                                    value = "{\"code\": \"4041\", \"message\": \"존재하지 않는 매장입니다.\", \"detail\": null}"
+                            )
+                    )
+            )
+    })
+    @PreAuthorize("hasRole('OWNER')")
+    @GetMapping("/images")
+    public ApiResponse<StorePhotoResponse> getStoreImages(
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        StorePhotoResponse response = storeOperationService.getStoreImages(userDetails.getUserId());
+        return ApiResponse.ok(response, "매장 사진 정보를 성공적으로 조회하였습니다.");
     }
 }

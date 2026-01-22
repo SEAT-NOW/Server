@@ -4,6 +4,7 @@ import depth.main.seatnow.domain.store.dto.request.OwnerWithdrawRequest;
 import depth.main.seatnow.domain.store.dto.request.signup.OperationRequest;
 import depth.main.seatnow.domain.store.dto.request.signup.OwnerSignupRequest;
 import depth.main.seatnow.domain.store.dto.request.signup.SpaceRequest;
+import depth.main.seatnow.domain.store.dto.response.AccountInfoResponse;
 import depth.main.seatnow.domain.store.dto.response.StoreProfileResponse;
 import depth.main.seatnow.domain.store.entity.menu.MenuCategory;
 import depth.main.seatnow.domain.store.entity.operation.OpeningHour;
@@ -147,6 +148,12 @@ public class StoreAccountService {
         return StoreProfileResponse.of(store);
     }
 
+    public AccountInfoResponse getAccountInfo(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException(ErrorCode.NOT_FOUND));
+
+        return AccountInfoResponse.of(user);
+    }
     private void mapOperations(OperationRequest request, Store store) {
         request.getHours().forEach(h ->
                 store.getOpeningHours().add(
@@ -217,4 +224,6 @@ public class StoreAccountService {
             );
         }
     }
+
+
 }

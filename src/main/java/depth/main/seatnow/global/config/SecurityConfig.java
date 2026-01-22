@@ -53,6 +53,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PATCH, "/api/v1/stores/seats").hasRole("OWNER")
                         .requestMatchers(HttpMethod.DELETE, "/api/v1/users").hasRole("USER")
                         .requestMatchers(HttpMethod.DELETE, "/api/v1/stores/owner").hasRole("OWNER")
+                        .requestMatchers(HttpMethod.GET, "/api/v1/stores/owner/account").hasRole("OWNER")
                         .requestMatchers(HttpMethod.GET,"/api/v1/stores/owner/profile").hasRole("OWNER")
                         .requestMatchers(HttpMethod.POST,"/api/v1/stores/owner/verify-password").hasRole("OWNER")
                         .requestMatchers(HttpMethod.PATCH,"/api/v1/stores/owner/password").hasRole("OWNER")

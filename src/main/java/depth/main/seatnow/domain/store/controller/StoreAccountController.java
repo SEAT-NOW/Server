@@ -2,6 +2,7 @@ package depth.main.seatnow.domain.store.controller;
 
 import depth.main.seatnow.domain.store.dto.request.OwnerWithdrawRequest;
 import depth.main.seatnow.domain.store.dto.request.signup.OwnerSignupRequest;
+import depth.main.seatnow.domain.store.dto.response.AccountInfoResponse;
 import depth.main.seatnow.domain.store.dto.response.StoreProfileResponse;
 import depth.main.seatnow.domain.store.service.StoreAccountService;
 import depth.main.seatnow.domain.user.dto.request.VerifyPasswordRequest;
@@ -240,5 +241,32 @@ public class StoreAccountController {
     ) {
         StoreProfileResponse response = storeAccountService.getStoreProfile(userDetails.getUserId());
         return ApiResponse.ok(response, "가게 기초 정보를 성공적으로 조회하였습니다.");
+    }
+
+    @Operation(
+            summary = "사장님 계정 정보 조회 [인증 필요]",
+            description = "03-1 마이페이지_계정 정보 수정 화면에 필요한 휴대폰 번호와 이메일을 조회합니다.",
+            security = { @SecurityRequirement(name = "bearerAuth") }
+    )
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "200",
+                    description = "조회 성공",
+                    content = @Content(schema = @Schema(implementation = AccountInfoResponse.class))
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "404",
+                    description = "유저 없음",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(value = "{\"code\": \"4040\", \"message\": \"존재하지 않는 사용자입니다.\", \"detail\": null}"))
+            )
+    })
+    @PreAuthorize("hasRole('OWNER')")
+    @GetMapping("/account")
+    public ApiResponse<AccountInfoResponse> getAccountInfo(
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        AccountInfoResponse response = storeAccountService.getAccountInfo(userDetails.getUserId());
+        return ApiResponse.ok(response, "계정 정보를 성공적으로 조회하였습니다.");
     }
 }

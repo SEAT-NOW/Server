@@ -4,6 +4,7 @@ import depth.main.seatnow.domain.store.dto.request.OwnerWithdrawRequest;
 import depth.main.seatnow.domain.store.dto.request.signup.OperationRequest;
 import depth.main.seatnow.domain.store.dto.request.signup.OwnerSignupRequest;
 import depth.main.seatnow.domain.store.dto.request.signup.SpaceRequest;
+import depth.main.seatnow.domain.store.dto.response.StoreProfileResponse;
 import depth.main.seatnow.domain.store.entity.menu.MenuCategory;
 import depth.main.seatnow.domain.store.entity.operation.OpeningHour;
 import depth.main.seatnow.domain.store.entity.operation.RegularHoliday;
@@ -12,8 +13,6 @@ import depth.main.seatnow.domain.store.entity.seat.Space;
 import depth.main.seatnow.domain.store.entity.seat.TableConfig;
 import depth.main.seatnow.domain.store.entity.store.Store;
 import depth.main.seatnow.domain.store.entity.store.StoreImage;
-import depth.main.seatnow.domain.store.repository.MenuCategoryRepository;
-import depth.main.seatnow.domain.store.repository.MenuRepository;
 import depth.main.seatnow.domain.store.repository.StoreRepository;
 import depth.main.seatnow.domain.user.entity.User;
 import depth.main.seatnow.domain.user.entity.enums.Role;
@@ -139,6 +138,13 @@ public class StoreAccountService {
                 .orElseThrow(() -> new NotFoundException(ErrorCode.NOT_FOUND));
 
         user.updatePassword(passwordEncoder.encode(password));
+    }
+
+    public StoreProfileResponse getStoreProfile(Long userId) {
+        Store store = storeRepository.findByUserId(userId)
+                .orElseThrow(() -> new NotFoundException(ErrorCode.STORE_NOT_FOUND));
+
+        return StoreProfileResponse.of(store);
     }
 
     private void mapOperations(OperationRequest request, Store store) {

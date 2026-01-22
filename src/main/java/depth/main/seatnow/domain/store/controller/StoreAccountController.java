@@ -2,6 +2,7 @@ package depth.main.seatnow.domain.store.controller;
 
 import depth.main.seatnow.domain.store.dto.request.OwnerWithdrawRequest;
 import depth.main.seatnow.domain.store.dto.request.signup.OwnerSignupRequest;
+import depth.main.seatnow.domain.store.dto.response.StoreProfileResponse;
 import depth.main.seatnow.domain.store.service.StoreAccountService;
 import depth.main.seatnow.domain.user.dto.request.VerifyPasswordRequest;
 import depth.main.seatnow.global.common.ApiResponse;
@@ -207,5 +208,37 @@ public class StoreAccountController {
     ) {
         storeAccountService.updatePassword(userDetails.getUserId(), request.getPassword());
         return ApiResponse.ok(true, "비밀번호가 성공적으로 수정되었습니다.");
+    }
+
+    @Operation(
+            summary = "가게 기초 정보 조회 [인증 필요]",
+            description = "03-2 마이페이지_가게 정보 수정 화면에 필요한 사업자 및 기초 정보를 조회합니다.",
+            security = { @SecurityRequirement(name = "bearerAuth") }
+    )
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "200",
+                    description = "조회 성공",
+                    content = @Content(schema = @Schema(implementation = StoreProfileResponse.class))
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "404",
+                    description = "매장 정보를 찾을 수 없음",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = @ExampleObject(
+                                    name = "매장 없음",
+                                    value = "{\"code\": \"4041\", \"message\": \"존재하지 않는 매장입니다.\", \"detail\": null}"
+                            )
+                    )
+            )
+    })
+    @PreAuthorize("hasRole('OWNER')")
+    @GetMapping("/profile")
+    public ApiResponse<StoreProfileResponse> getStoreProfile(
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        StoreProfileResponse response = storeAccountService.getStoreProfile(userDetails.getUserId());
+        return ApiResponse.ok(response, "가게 기초 정보를 성공적으로 조회하였습니다.");
     }
 }

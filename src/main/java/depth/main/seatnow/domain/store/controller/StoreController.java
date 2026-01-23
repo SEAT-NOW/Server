@@ -615,8 +615,11 @@ public class StoreController {
         return ApiResponse.ok(true, "메뉴 정보가 성공적으로 반영되었습니다.");
     }
 
+    @Operation(summary = "매장 상세 정보 조회", description = "매장의 메뉴, 운영시간 등 모든 상세 정보를 조회합니다.")
     @GetMapping("/{storeId}")
-    public ApiResponse<StoreResponse> getStoreDetails(@PathVariable Long storeId) {
+    public ApiResponse<StoreResponse> getStoreDetails(
+            @Parameter(description = "조회할 매장의 ID (PK)", required = true, example = "3")
+            @PathVariable Long storeId) {
         StoreResponse storeInfo = storeService.getStoreDetails(storeId);
         return ApiResponse.ok(storeInfo);
     }

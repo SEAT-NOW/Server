@@ -22,28 +22,28 @@ public class StoreResponse {
 
     private Long storeId;
 
-    private String storeName;
+    private String storeName; // 매장 이름
 
-    private String address;
+    private String address; // 주소
 
-    private String neighborhood;
+    private String neighborhood; // 동,읍
 
-    private List<String> universityNames;
+    private List<String> universityNames; // 대학 이름
 
-    private String storePhone;
+    private String storePhone; // 매장 전화
 
-    private Integer totalSeatCount;
-    private Integer usedSeatCount;
-    private SeatStatus statusTag;
+    private Integer totalSeatCount; // 전체 좌석 수
+    private Integer usedSeatCount; // 사용중인 좌석 수
+    private SeatStatus statusTag; // 혼잡도 상태
 
-    private OperationStatus operationStatus;
+    private OperationStatus operationStatus; // 운영 정보
 
-    private List<OpeningHourDto> openingHours;
-    private List<RegularHolidayDto> regularHolidays;
-    private List<TemporaryHolidayDto> temporaryHolidays;
+    private List<OpeningHourDto> openingHours; // 운영 시간
+    private List<RegularHolidayDto> regularHolidays; // 휴일
+    private List<TemporaryHolidayDto> temporaryHolidays; // 임시 휴일
 
-    private List<ImageDto> images;
-    private List<MenuCategoryDto> menuCategories;
+    private List<ImageDto> images; // 가게 사진
+    private List<MenuCategoryDto> menuCategories; // 메뉴 정보
 
     public static StoreResponse from(Store store) {
         return StoreResponse.builder()

@@ -1,5 +1,7 @@
 package depth.main.seatnow.domain.store.dto.response;
 
+import depth.main.seatnow.domain.store.entity.menu.Menu;
+import depth.main.seatnow.domain.store.entity.menu.MenuCategory;
 import depth.main.seatnow.domain.store.entity.operation.OpeningHour;
 import depth.main.seatnow.domain.store.entity.operation.OperationStatus;
 import depth.main.seatnow.domain.store.entity.operation.RegularHoliday;
@@ -41,6 +43,7 @@ public class StoreResponse {
     private List<TemporaryHolidayDto> temporaryHolidays;
 
     private List<ImageDto> images;
+    private List<MenuCategoryDto> menuCategories;
 
     public static StoreResponse from(Store store) {
         return StoreResponse.builder()
@@ -58,6 +61,7 @@ public class StoreResponse {
                 .regularHolidays(mapList(store.getRegularHolidays(), RegularHolidayDto::from))
                 .temporaryHolidays(mapList(store.getTemporaryHolidays(), TemporaryHolidayDto::from))
                 .images(mapList(store.getImages(), ImageDto::from))
+                .menuCategories(mapList(store.getMenuCategories(), MenuCategoryDto::from))
                 .build();
     }
 
@@ -86,6 +90,22 @@ public class StoreResponse {
     public record ImageDto(Long id, String url, boolean isMain) {
         public static ImageDto from(StoreImage i) {
             return new ImageDto(i.getId(), i.getImageUrl(), i.isMain());
+        }
+    }
+
+    public record MenuCategoryDto(Long id, String name, List<MenuDto> menus) {
+        public static MenuCategoryDto from(MenuCategory mc) {
+            return new MenuCategoryDto(
+                    mc.getId(),
+                    mc.getName(),
+                    mapList(mc.getMenus(), MenuDto::from)
+            );
+        }
+    }
+
+    public record MenuDto(Long id, String name, Integer price, String imageUrl) {
+        public static MenuDto from(Menu m) {
+            return new MenuDto(m.getId(), m.getName(), m.getPrice(), m.getImageUrl());
         }
     }
 }

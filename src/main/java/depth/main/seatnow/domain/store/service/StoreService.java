@@ -7,6 +7,7 @@ import depth.main.seatnow.domain.store.dto.request.signup.SpaceRequest;
 import depth.main.seatnow.domain.store.dto.request.update.*;
 import depth.main.seatnow.domain.store.dto.response.SeatResponse;
 import depth.main.seatnow.domain.store.dto.response.StoreListResponse;
+import depth.main.seatnow.domain.store.dto.response.StoreResponse;
 import depth.main.seatnow.domain.store.entity.menu.Menu;
 import depth.main.seatnow.domain.store.entity.menu.MenuCategory;
 import depth.main.seatnow.domain.store.entity.operation.OpeningHour;
@@ -39,6 +40,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 import static depth.main.seatnow.global.exception.error.ErrorCode.*;
 
@@ -596,6 +598,15 @@ public class StoreService {
         }
     }
 
+    public StoreResponse getStoreDetails(Long storeId) {
+        Optional<Store> optionalStore = storeRepository.findById(storeId);
 
+        if (optionalStore.isEmpty()) {
+            throw new NotFoundException(ErrorCode.STORE_NOT_FOUND);
+        }
+
+        Store store = optionalStore.get();
+        return StoreResponse.from(store);
+    }
 
 }

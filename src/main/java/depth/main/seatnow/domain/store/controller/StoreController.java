@@ -5,6 +5,7 @@ import depth.main.seatnow.domain.store.dto.request.signup.OwnerSignupRequest;
 import depth.main.seatnow.domain.store.dto.request.update.*;
 import depth.main.seatnow.domain.store.dto.response.SeatResponse;
 import depth.main.seatnow.domain.store.dto.response.SpaceSeatUpdateResponse;
+import depth.main.seatnow.domain.store.dto.response.StoreResponse;
 import depth.main.seatnow.domain.store.service.SeatService;
 import depth.main.seatnow.domain.store.service.StoreService;
 import depth.main.seatnow.domain.user.dto.request.VerifyPasswordRequest;
@@ -612,6 +613,12 @@ public class StoreController {
     ) {
         storeService.saveOrUpdateMenu(userDetails.getUserId(), request, menuImage);
         return ApiResponse.ok(true, "메뉴 정보가 성공적으로 반영되었습니다.");
+    }
+
+    @GetMapping("/{storeId}")
+    public ApiResponse<StoreResponse> getStoreDetails(@PathVariable Long storeId) {
+        StoreResponse storeInfo = storeService.getStoreDetails(storeId);
+        return ApiResponse.ok(storeInfo);
     }
 }
 

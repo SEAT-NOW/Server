@@ -81,6 +81,8 @@ public class Store extends BaseTimeEntity {
     @Enumerated(EnumType.STRING)
     private OperationStatus operationStatus; // 영업중, 곧 영업종료, 영업종료
 
+    private LocalDateTime seatModifiedAt; // 좌석 정보가 마지막으로 업데이트된 시각
+
     @Builder.Default
     @OneToMany(mappedBy = "store", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<StoreImage> images = new ArrayList<>();
@@ -197,6 +199,7 @@ public class Store extends BaseTimeEntity {
 
     public void updateUsedSeatCount(int totalUsedSeats) {
         this.usedSeatCount = totalUsedSeats;
+        this.seatModifiedAt = LocalDateTime.now();
     }
 
     public void updateStorePhone(String storePhone) {

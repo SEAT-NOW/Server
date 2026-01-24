@@ -53,6 +53,9 @@ public class StoreListResponse {
     @Schema(description = "현재 영업 상태 (영업 중, 곧 영업 종료, 영업 종료)", example = "영업 중")
     private String operationStatus;
 
+    @Schema(description = "매장 전화번호", example = "021234567")
+    private String storePhone;
+
     public static StoreListResponse from(Store store, String distance) {
         List<String> imageUrls = store.getImages().stream()
                 .sorted(Comparator.comparing(StoreImage::isMain).reversed())
@@ -74,6 +77,7 @@ public class StoreListResponse {
                 .updatedAt(store.getModifiedAt())
                 .distance(distance)
                 .operationStatus(store.getOperationStatus().getDescription())
+                .storePhone(store.getStorePhone())
                 .build();
     }
 }

@@ -1,6 +1,8 @@
 package depth.main.seatnow.domain.store.controller;
 
 import depth.main.seatnow.domain.store.dto.request.*;
+import depth.main.seatnow.domain.store.dto.request.signup.OwnerSignupRequest;
+import depth.main.seatnow.domain.store.dto.request.update.*;
 import depth.main.seatnow.domain.store.dto.response.SeatResponse;
 import depth.main.seatnow.domain.store.dto.response.SpaceSeatUpdateResponse;
 import depth.main.seatnow.domain.store.service.SeatService;
@@ -306,7 +308,7 @@ public class StoreController {
     @PreAuthorize("hasRole('OWNER')")
     @PatchMapping("/phone-number")
     public ApiResponse<Boolean> updateStorePhone(
-            @Valid @RequestBody UpdateStorePhoneRequest request,
+            @Valid @RequestBody StorePhoneUpdateRequest request,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
         storeService.updateStorePhone(userDetails.getUserId(), request.getStorePhone());
@@ -417,6 +419,199 @@ public class StoreController {
     ) {
         storeService.updatePassword(userDetails.getUserId(), request.getPassword());
         return ApiResponse.ok(true, "비밀번호가 성공적으로 수정되었습니다.");
+    }
+
+    @Operation(
+            summary = "매장 운영 정보 수정 [인증 필요]",
+            description = "Bearer 토큰 인증이 필요하며, 04-1가게관리_영업정보 관리에서 사장님의 영업 시간, 정기 휴무, 임시 휴무 정보를 일괄 수정합니다." +
+            "ID가 포함된 항목은 수정, ID가 없는 항목은 신규 추가, 기존 리스트에서 누락된 항목은 삭제 처리됩니다.",
+            security = { @SecurityRequirement(name = "bearerAuth") }
+    )
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "200",
+                    description = "운영 정보 수정 성공",
+                    content = @Content(schema = @Schema(implementation = ApiResponse.class),
+                            examples = @ExampleObject(value = "{\"success\": true, \"data\": true, \"message\": \"매장 운영 정보가 성공적으로 수정되었습니다.\"}"))
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "404",
+                    description = "존재하지 않는 리소스",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = {
+                                    @ExampleObject(
+                                            name = "매장 없음",
+                                            summary = "STORE_NOT_FOUND",
+                                            value = "{\"code\": \"4041\", \"message\": \"존재하지 않는 매장입니다.\", \"detail\": null}"
+                                    ),
+                                    @ExampleObject(
+                                            name = "영업시간 정보 없음",
+                                            summary = "OPENING_HOUR_NOT_FOUND",
+                                            value = "{\"code\": \"4044\", \"message\": \"존재하지 않는 영업시간입니다.\", \"detail\": null}"
+                                    ),
+                                    @ExampleObject(
+                                            name = "휴무 정보 없음",
+                                            summary = "HOLIDAY_NOT_FOUND",
+                                            value = "{\"code\": \"4045\", \"message\": \"존재하지 않는 임시휴무입니다.\", \"detail\": null}"
+                                    )
+                            }
+                    )
+            )
+    })
+    @PreAuthorize("hasRole('OWNER')")
+    @PatchMapping("/operation")
+    public ApiResponse<Boolean> updateOperationInfo(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestBody @Valid OperationUpdateRequest request) {
+
+        storeService.updateOperationInfo(userDetails.getUserId(), request);
+        return ApiResponse.ok(true, "매장 운영 정보가 성공적으로 수정되었습니다.");
+    }
+
+    @Operation(
+            summary = "매장 사진 일괄 수정 [인증 필요]",
+            description = "04-3 가게 관리_매장 사진 관리에서 매장의 새로운 사진을 추가 업로드합니다.\n\n" +
+                    "**[데이터 송신 규칙]**\n" +
+                    "- **updateData**: 유지할 기존 사진의 ID와 대표 여부 정보 (JSON)\n" +
+                    "- **newImages**: 새롭게 업로드할 이미지 파일 리스트 (File)\n\n" +
+                    "**[비즈니스 로직 - 대표 사진 선정 우선순위]**\n" +
+                    "1. 'updateData' 내 기존 사진 중 `isMain: true`인 항목이 있다면 해당 사진을 대표로 유지합니다.\n" +
+                    "2. 'updateData'에 'isMain: true'가 없다면, `newImages` 리스트의 **첫 번째(0번 인덱스)** 사진을 자동으로 대표로 지정합니다.\n",
+            security = { @SecurityRequirement(name = "bearerAuth") }
+    )
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "200",
+                    description = "매장 사진 수정 성공",
+                    content = @Content(schema = @Schema(implementation = ApiResponse.class),
+                            examples = @ExampleObject(value = "{\"success\": true, \"data\": true, \"message\": \"매장 사진이 성공적으로 수정되었습니다.\"}"))
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "404",
+                    description = "매장 정보를 찾을 수 없음",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = @ExampleObject(
+                                    name = "매장 없음",
+                                    value = "{\"code\": \"4041\", \"message\": \"존재하지 않는 매장입니다.\", \"detail\": null}"
+                            )
+                    )
+            )
+    })
+    @PatchMapping(value = "/images", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize("hasRole('OWNER')")
+    public ApiResponse<Boolean> updateStoreImages(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+
+            @RequestPart("updateData")
+            @Parameter(description = "기존 이미지 관리 정보 (JSON)", required = false)
+            @Valid StorePhotoUpdateRequest request,
+
+            @RequestPart(value = "newImages", required = false)
+            @Parameter(description = "새로 추가할 매장 이미지 파일들")
+            List<MultipartFile> newImages
+    ) {
+        storeService.updateStoreImages(userDetails.getUserId(), request, newImages);
+        return ApiResponse.ok(true, "매장 사진이 성공적으로 수정되었습니다.");
+    }
+
+    @Operation(
+            summary = "메뉴 카테고리 일괄 편집 [인증 필요]",
+            description = "04-2-1 메뉴 카테고리 편집에서 기존 카테고리 수정/삭제 및 신규 카테고리를 추가합니다.\n\n" +
+                    "**주의**: 카테고리 삭제 시 해당 카테고리에 속한 메뉴도 모두 삭제됩니다.",
+            security = { @SecurityRequirement(name = "bearerAuth") }
+    )
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "200",
+                    description = "수정 성공",
+                    content = @Content(
+                            schema = @Schema(implementation = ApiResponse.class),
+                            examples = @ExampleObject(
+                                    value = "{\"success\": true, \"data\": true, \"message\": \"메뉴 카테고리가 성공적으로 수정되었습니다.\"}"))
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "404",
+                    description = "매장 또는 카테고리를 찾을 수 없음",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = {
+                                    @ExampleObject(
+                                            name = "매장 없음",
+                                            summary = "사장님의 매장 정보를 찾을 수 없는 경우",
+                                            value = "{\"code\": \"4041\", \"message\": \"존재하지 않는 매장입니다.\", \"detail\": null}"),
+                                    @ExampleObject(
+                                            name = "카테고리 없음",
+                                            summary = "수정하려는 카테고리 ID가 해당 매장에 존재하지 않는 경우",
+                                            value = "{\"code\": \"4046\", \"message\": \"존재하지 않는 메뉴 카테고리입니다.\", \"detail\": null}")
+                            }
+                    )
+            )
+    })
+    @PatchMapping("/menu-categories")
+    @PreAuthorize("hasRole('OWNER')")
+    public ApiResponse<Boolean> updateMenuCategories(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestBody @Valid MenuCategoryUpdateRequest request
+    ) {
+        storeService.updateMenuCategories(userDetails.getUserId(), request);
+        return ApiResponse.ok(true, "메뉴 카테고리가 성공적으로 수정되었습니다.");
+    }
+
+    @Operation(
+            summary = "메뉴 등록 및 상세 수정 [인증 필요]",
+            description = "04-2-2메뉴 상세 편집에서 새로운 메뉴를 등록하거나 기존 메뉴 정보를 수정합니다.\n\n" +
+                    "- **신규 등록**: id를 null로 보냅니다.\n" +
+                    "- **정보 수정**: 해당 메뉴의 id를 포함하여 보냅니다.",
+            security = { @SecurityRequirement(name = "bearerAuth") }
+    )
+
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "200",
+                    description = "수정 성공",
+                    content = @Content(
+                            schema = @Schema(implementation = ApiResponse.class),
+                            examples = @ExampleObject(
+                                    value = "{\"success\": true, \"data\": true, \"message\": \"메뉴 정보가 성공적으로 반영되었습니다.\"}"))
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "404",
+                    description = "대상 메뉴 또는 카테고리를 찾을 수 없음",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = {
+                                    @ExampleObject(
+                                            name = "카테고리 없음",
+                                            summary = "카테고리 ID가 잘못된 경우",
+                                            value = "{\"code\": \"4046\", \"message\": \"존재하지 않는 메뉴 카테고리입니다.\", \"detail\": null}"),
+                                    @ExampleObject(
+                                            name = "메뉴 없음",
+                                            summary = "수정하려는 메뉴 ID가 잘못된 경우",
+                                            value = "{\"code\": \"4047\", \"message\": \"존재하지 않는 메뉴입니다.\", \"detail\": null}")
+                            }
+                    )
+            )
+    })
+    @PostMapping(value = "/menus", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize("hasRole('OWNER')")
+    public ApiResponse<Boolean> saveOrUpdateMenu(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+
+            @RequestPart("menuData")
+            @Parameter(
+                    description = "메뉴 등록 및 수정 데이터 (JSON)",
+                    required = true,
+                    content = @Content(schema = @Schema(implementation = MenuUpdateRequest.class))
+            )@Valid MenuUpdateRequest request,
+
+            @RequestPart(value = "menuImage", required = false)
+            @Parameter(description = "메뉴 이미지 파일 (이미지 변경 시에만 전송)")
+            MultipartFile menuImage
+    ) {
+        storeService.saveOrUpdateMenu(userDetails.getUserId(), request, menuImage);
+        return ApiResponse.ok(true, "메뉴 정보가 성공적으로 반영되었습니다.");
     }
 }
 

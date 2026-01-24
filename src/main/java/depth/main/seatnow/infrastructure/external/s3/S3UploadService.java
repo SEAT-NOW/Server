@@ -91,4 +91,25 @@ public class S3UploadService {
             throw new RuntimeException("S3 사진 업로드 중 에러가 발생했습니다.", e);
         }
     }
+
+    // 3. 파일 삭제: S3에 저장된 실제 파일을 삭제한다.
+    public void deleteFile(String fileUrl) {
+        if (fileUrl == null || fileUrl.isEmpty()) return;
+
+        // URL에서 S3 Key값 추출 (예: "permanent/store/uuid-filename.jpg")
+        // ".com/" 이후의 문자열이 Key가 된다.
+        String key = fileUrl.substring(fileUrl.lastIndexOf(".com/") + 5);
+
+        try {
+            DeleteObjectRequest deleteObjectRequest = DeleteObjectRequest.builder()
+                    .bucket(bucket)
+                    .key(key)
+                    .build();
+
+            s3Client.deleteObject(deleteObjectRequest);
+        } catch (Exception e) {
+            // 삭제 실패 시 로그를 남기거나 예외 처리를 한다.
+            System.err.println("S3 파일 삭제 중 에러 발생: " + e.getMessage());
+        }
+    }
 }

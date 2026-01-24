@@ -34,4 +34,9 @@ public class RegularHoliday {
                 .store(store)
                 .build();
     }
+
+    public void update(DayOfWeek dayOfWeek, Integer weekInfo) {
+        this.dayOfWeek = dayOfWeek;
+        this.weekInfo = weekInfo;
+    }
 }

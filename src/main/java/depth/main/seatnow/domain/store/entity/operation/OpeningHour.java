@@ -39,4 +39,10 @@ public class OpeningHour {
                 .store(store)
                 .build();
     }
+
+    public void update(DayOfWeek dayOfWeek, LocalTime startTime, LocalTime endTime) {
+        this.dayOfWeek = dayOfWeek;
+        this.startTime = startTime;
+        this.endTime = endTime;
+    }
 }

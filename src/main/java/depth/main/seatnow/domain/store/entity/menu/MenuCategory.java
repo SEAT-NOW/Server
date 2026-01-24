@@ -26,4 +26,8 @@ public class MenuCategory {
     @Builder.Default
     @OneToMany(mappedBy = "menuCategory", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Menu> menus = new ArrayList<>();
+
+    public void updateName(String name) {
+        this.name = name;
+    }
 }

@@ -33,4 +33,9 @@ public class TemporaryHoliday {
                 .store(store)
                 .build();
     }
+
+    public void update(LocalDate startDate, LocalDate endDate) {
+        this.startDate = startDate;
+        this.endDate = endDate;
+    }
 }

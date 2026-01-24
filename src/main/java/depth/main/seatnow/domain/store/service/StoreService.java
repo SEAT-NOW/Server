@@ -1,8 +1,14 @@
 package depth.main.seatnow.domain.store.service;
 
 import depth.main.seatnow.domain.store.dto.request.*;
+import depth.main.seatnow.domain.store.dto.request.signup.OperationRequest;
+import depth.main.seatnow.domain.store.dto.request.signup.OwnerSignupRequest;
+import depth.main.seatnow.domain.store.dto.request.signup.SpaceRequest;
+import depth.main.seatnow.domain.store.dto.request.update.*;
 import depth.main.seatnow.domain.store.dto.response.SeatResponse;
 import depth.main.seatnow.domain.store.dto.response.StoreListResponse;
+import depth.main.seatnow.domain.store.entity.menu.Menu;
+import depth.main.seatnow.domain.store.entity.menu.MenuCategory;
 import depth.main.seatnow.domain.store.entity.operation.OpeningHour;
 import depth.main.seatnow.domain.store.entity.operation.RegularHoliday;
 import depth.main.seatnow.domain.store.entity.operation.TemporaryHoliday;
@@ -10,6 +16,8 @@ import depth.main.seatnow.domain.store.entity.seat.Space;
 import depth.main.seatnow.domain.store.entity.seat.TableConfig;
 import depth.main.seatnow.domain.store.entity.store.Store;
 import depth.main.seatnow.domain.store.entity.store.StoreImage;
+import depth.main.seatnow.domain.store.repository.MenuCategoryRepository;
+import depth.main.seatnow.domain.store.repository.MenuRepository;
 import depth.main.seatnow.domain.store.repository.StoreRepository;
 import depth.main.seatnow.domain.user.entity.User;
 import depth.main.seatnow.domain.user.entity.enums.Role;
@@ -30,6 +38,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import static depth.main.seatnow.global.exception.error.ErrorCode.*;
 
@@ -41,6 +50,8 @@ public class StoreService {
     private final StoreRepository storeRepository;
     private final S3UploadService s3UploadService;
     private final PasswordEncoder passwordEncoder;
+    private final MenuCategoryRepository menuCategoryRepository;
+    private final MenuRepository menuRepository;
 
     @Transactional
     public Long registerOwner(OwnerSignupRequest request, MultipartFile licenseImage, List<MultipartFile> storeImages) {
@@ -86,6 +97,9 @@ public class StoreService {
         // 부가 정보 매핑
         mapOperations(request.getOperation(), store);
         mapLayouts(request.getLayout(), store);
+
+        // 기본 메뉴 카테고리 생성
+        createDefaultCategories(store);
 
         // 매장 이미지 일괄 업로드 및 매핑
         if (storeImages != null && !storeImages.isEmpty()) {
@@ -247,6 +261,226 @@ public class StoreService {
 
     }
 
+    @Transactional
+    public void updateOperationInfo(Long userId, OperationUpdateRequest request) {
+        Store store = storeRepository.findByUserId(userId)
+                .orElseThrow(() -> new NotFoundException(ErrorCode.STORE_NOT_FOUND));
+
+        // 1. 정기 휴무 업데이트
+        updateRegularHolidays(store, request.getRegularHolidays());
+        // 2. 임시 휴무 업데이트
+        updateTemporaryHolidays(store, request.getTemporaryHolidays());
+        // 3. 영업 시간 업데이트
+        updateOpeningHours(store, request.getHours());
+    }
+
+    @Transactional
+    public void updateStoreImages(Long userId, StorePhotoUpdateRequest request, List<MultipartFile> newImages) {
+        Store store = storeRepository.findByUserId(userId)
+                .orElseThrow(() -> new NotFoundException(ErrorCode.STORE_NOT_FOUND));
+
+        List<StoreImage> currentImages = store.getImages();
+
+        // 1. 삭제: 요청 리스트에 없는 기존 이미지는 S3와 DB에서 제거
+        List<Long> keepIds = request.getExistingImages().stream()
+                .map(StorePhotoUpdateRequest.ExistingImageDto::getId)
+                .toList();
+
+        List<StoreImage> toDelete = currentImages.stream()
+                .filter(img -> !keepIds.contains(img.getId()))
+                .toList();
+
+        toDelete.forEach(img -> s3UploadService.deleteFile(img.getImageUrl()));
+        currentImages.removeAll(toDelete);
+
+        // 2. 수정: 기존 이미지 중 대표 설정값이 변한 경우만 업데이트
+        for (StorePhotoUpdateRequest.ExistingImageDto dto : request.getExistingImages()) {
+            currentImages.stream()
+                    .filter(img -> img.getId().equals(dto.getId()))
+                    .findFirst()
+                    .ifPresent(img -> {
+                        if (img.isMain() != dto.isMain()) {
+                            img.updateMain(dto.isMain());
+                        }
+                    });
+        }
+
+        // 3. 현재 살아남은 사진들 중 대표 사진이 있는지 체크
+        boolean hasMainImage = currentImages.stream()
+                .anyMatch(StoreImage::isMain);
+
+        // 4. 추가: 신규 사진 업로드 및 대표 우선순위 적용
+        if (newImages != null && !newImages.isEmpty()) {
+            for (int i = 0; i < newImages.size(); i++) {
+                MultipartFile file = newImages.get(i);
+
+                if (file != null && !file.isEmpty()) {
+                    String url = s3UploadService.uploadFileToPath(file, "permanent/store");
+                    boolean shouldBeMain = (!hasMainImage && i == 0);
+                    currentImages.add(StoreImage.create(url, shouldBeMain, store));
+                    if (shouldBeMain) {
+                        hasMainImage = true;
+                    }
+                }
+            }
+        }
+    }
+    @Transactional
+    public void updateMenuCategories(Long userId, MenuCategoryUpdateRequest request) {
+        Store store = storeRepository.findByUserId(userId)
+                .orElseThrow(() -> new NotFoundException(ErrorCode.STORE_NOT_FOUND));
+
+        List<MenuCategory> currentCategories = store.getMenuCategories();
+
+        // 1. 삭제: 요청에 없는 기존 카테고리 식별 및 제거
+        List<Long> keepIds = request.getCategories().stream()
+                .map(MenuCategoryUpdateRequest.CategoryDto::getId)
+                .filter(Objects::nonNull)
+                .toList();
+
+        currentCategories.removeIf(category -> !keepIds.contains(category.getId()));
+
+        // 2. 수정 및 추가
+        for (MenuCategoryUpdateRequest.CategoryDto dto : request.getCategories()) {
+            if (dto.getId() != null) {
+                // 수정: 기존 ID가 있으면 이름 업데이트
+                MenuCategory category = currentCategories.stream()
+                        .filter(cat -> cat.getId().equals(dto.getId()))
+                        .findFirst()
+                        .orElseThrow(() -> new NotFoundException(ErrorCode.CATEGORY_NOT_FOUND));
+
+                category.updateName(dto.getName());
+            } else {
+                // 추가: ID가 없으면 신규 생성 후 리스트에 추가
+                currentCategories.add(MenuCategory.builder()
+                        .name(dto.getName())
+                        .store(store)
+                        .build());
+            }
+        }
+    }
+    @Transactional
+    public void saveOrUpdateMenu(Long userId, MenuUpdateRequest request, MultipartFile menuImage) {
+        Store store = storeRepository.findByUserId(userId)
+                .orElseThrow(() -> new NotFoundException(ErrorCode.STORE_NOT_FOUND));
+
+        MenuCategory category = menuCategoryRepository.findById(request.getCategoryId())
+                .orElseThrow(() -> new NotFoundException(ErrorCode.CATEGORY_NOT_FOUND));
+
+        if(request.getId() == null){
+            // 신규 등록
+            String imageUrl = null;
+            if(menuImage != null && !menuImage.isEmpty()){
+                imageUrl = s3UploadService.uploadFileToPath(menuImage, "permanent/menu");
+            }
+
+            Menu newMenu = Menu.builder()
+                    .name(request.getName())
+                    .price(request.getPrice())
+                    .imageUrl(imageUrl)
+                    .menuCategory(category)
+                    .build();
+            menuRepository.save(newMenu);
+        }else {
+            // 기존 수정
+            Menu menu = menuRepository.findById(request.getId())
+                    .orElseThrow(() -> new NotFoundException(ErrorCode.MENU_NOT_FOUND));
+
+            // 사진 처리 로직
+            String currentImageUrl = menu.getImageUrl();
+            if(menuImage != null && !menuImage.isEmpty()){
+                // 새로운 사진이 들어온 경우: 기존 S3 파일 삭제 후 업로드
+                if(currentImageUrl != null){
+                    s3UploadService.deleteFile(currentImageUrl);
+                }
+                currentImageUrl = s3UploadService.uploadFileToPath(menuImage,"permanent/menu");
+            }else if(!request.isKeepImage() && currentImageUrl != null){
+                s3UploadService.deleteFile(currentImageUrl);
+                currentImageUrl = null;
+            }
+
+            menu.updateMenuDetails(request.getName(), request.getPrice(), currentImageUrl, category);
+        }
+    }
+    private void createDefaultCategories(Store store) {
+        List<String> defaultNames = List.of("메인 메뉴", "사이드 메뉴", "주류");
+
+        defaultNames.forEach(name ->{
+            MenuCategory category = MenuCategory.builder()
+                    .name(name)
+                    .store(store)
+                    .build();
+
+            store.getMenuCategories().add(category);
+        });
+    }
+
+    private void updateOpeningHours(Store store, List<OperationUpdateRequest.OpeningHourUpdateDto> hours) {
+        List<OpeningHour> existing = store.getOpeningHours();
+        List<Long> requestIds = hours.stream()
+                .map(OperationUpdateRequest.OpeningHourUpdateDto::getId)
+                .filter(Objects::nonNull)
+                .toList();
+
+        existing.removeIf(h -> !requestIds.contains(h.getId()));
+
+        for (OperationUpdateRequest.OpeningHourUpdateDto dto : hours) {
+            if (dto.getId() != null) {
+                OpeningHour hour = existing.stream()
+                        .filter(h -> h.getId().equals(dto.getId()))
+                        .findFirst()
+                        .orElseThrow(() -> new NotFoundException(ErrorCode.OPENING_HOUR_NOT_FOUND));
+                hour.update(dto.getDayOfWeek(), dto.getStartTime(), dto.getEndTime());
+            } else {
+                existing.add(OpeningHour.create(dto.getDayOfWeek(), dto.getStartTime(), dto.getEndTime(), store));
+            }
+        }
+    }
+
+    private void updateTemporaryHolidays(Store store, List<OperationUpdateRequest.TemporaryHolidayUpdateDto> temporaryHolidays) {
+        List<TemporaryHoliday> existing = store.getTemporaryHolidays();
+        List<Long> requestIds = temporaryHolidays.stream()
+                .map(OperationUpdateRequest.TemporaryHolidayUpdateDto::getId)
+                .filter(Objects::nonNull)
+                .toList();
+
+        existing.removeIf(h -> !requestIds.contains(h.getId()));
+
+        for (OperationUpdateRequest.TemporaryHolidayUpdateDto dto : temporaryHolidays) {
+            if (dto.getId() != null) {
+                TemporaryHoliday holiday = existing.stream()
+                        .filter(h -> h.getId().equals(dto.getId()))
+                        .findFirst()
+                        .orElseThrow(() -> new NotFoundException(ErrorCode.HOLIDAY_NOT_FOUND));
+                holiday.update(dto.getStartDate(), dto.getEndDate());
+            } else {
+                existing.add(TemporaryHoliday.create(dto.getStartDate(), dto.getEndDate(), store));
+            }
+        }
+    }
+
+    private void updateRegularHolidays(Store store, List<OperationUpdateRequest.RegularHolidayUpdateDto> regularHolidays) {
+        List<RegularHoliday> existing = store.getRegularHolidays();
+        List<Long> requestIds = regularHolidays.stream()
+                .map(OperationUpdateRequest.RegularHolidayUpdateDto::getId)
+                .filter(Objects::nonNull)
+                .toList();
+
+        existing.removeIf(h -> !requestIds.contains(h.getId())); // 삭제
+
+        for (OperationUpdateRequest.RegularHolidayUpdateDto dto : regularHolidays) {
+            if (dto.getId() != null) { // 수정
+                RegularHoliday holiday = existing.stream()
+                        .filter(h -> h.getId().equals(dto.getId()))
+                        .findFirst()
+                        .orElseThrow(() -> new NotFoundException(ErrorCode.HOLIDAY_NOT_FOUND));
+                holiday.update(dto.getDayOfWeek(), dto.getWeekInfo());
+            } else {
+                existing.add(RegularHoliday.create(dto.getDayOfWeek(), dto.getWeekInfo(), store));
+            }
+        }
+    }
+
     private void updateTableConfigs(Space space, List<SpaceUpdateRequest.TableUpdateDto> tables) {
         List<TableConfig> existingTables = space.getTableConfigs();
 
@@ -361,6 +595,7 @@ public class StoreService {
             return String.format("%.1fkm", meters / 1000.0);
         }
     }
+
 
 
 }

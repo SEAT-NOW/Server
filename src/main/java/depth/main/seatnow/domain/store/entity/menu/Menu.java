@@ -24,4 +24,11 @@ public class Menu {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "menu_category_id")
     private MenuCategory menuCategory;
+
+    public void updateMenuDetails(String name, Integer price, String currentImageUrl, MenuCategory category) {
+        this.name = name;
+        this.price = price;
+        this.imageUrl = currentImageUrl;
+        this.menuCategory = category;
+    }
 }

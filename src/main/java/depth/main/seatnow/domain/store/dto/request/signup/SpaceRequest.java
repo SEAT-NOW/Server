@@ -1,4 +1,4 @@
-package depth.main.seatnow.domain.store.dto.request;
+package depth.main.seatnow.domain.store.dto.request.signup;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;

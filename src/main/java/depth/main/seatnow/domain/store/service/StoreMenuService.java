@@ -38,14 +38,14 @@ public class StoreMenuService {
 
         // 1. 삭제: 요청에 없는 기존 카테고리 식별 및 제거
         List<Long> keepIds = request.getCategories().stream()
-                .map(MenuCategoryUpdateRequest.CategoryDto::getId)
+                .map(MenuCategoryUpdateRequest.CategoryUpdateDto::getId)
                 .filter(Objects::nonNull)
                 .toList();
 
         currentCategories.removeIf(category -> !keepIds.contains(category.getId()));
 
         // 2. 수정 및 추가
-        for (MenuCategoryUpdateRequest.CategoryDto dto : request.getCategories()) {
+        for (MenuCategoryUpdateRequest.CategoryUpdateDto dto : request.getCategories()) {
             if (dto.getId() != null) {
                 // 수정: 기존 ID가 있으면 이름 업데이트
                 MenuCategory category = currentCategories.stream()

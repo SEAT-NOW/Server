@@ -1,7 +1,7 @@
 package depth.main.seatnow.domain.store.controller;
 
 import depth.main.seatnow.domain.store.dto.response.StoreListResponse;
-import depth.main.seatnow.domain.store.service.StoreService;
+import depth.main.seatnow.domain.store.service.StoreLookUpService;
 import depth.main.seatnow.global.common.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -19,7 +19,7 @@ import java.util.List;
 @RequestMapping("/api/v1/stores")
 @RequiredArgsConstructor
 public class StoreLookUpController {
-    private final StoreService storeService;
+    private final StoreLookUpService storeService;
     @Operation(
             summary = "술집 검색 및 지도 조회",
             description = "홈 화면, N명 자리 찾기, 키워드 검색 API" +

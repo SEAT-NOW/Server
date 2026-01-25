@@ -15,7 +15,7 @@ public interface StoreRepository extends JpaRepository<Store, Long> {
     // 내 주변 반경 N km 검색
     @Query(value = "SELECT * FROM store " +
             "WHERE (6371 * acos(cos(radians(:lat)) * cos(radians(latitude)) * cos(radians(longitude) - radians(:lng)) + sin(radians(:lat)) * sin(radians(latitude)))) <= :radius " +
-            "ORDER BY modified_at DESC", nativeQuery = true)
+            "ORDER BY seat_modified_at DESC", nativeQuery = true)
     List<Store> searchByLocation(@Param("lat") double lat, @Param("lng") double lng, @Param("radius") double radius);
 
     // 키워드 검색

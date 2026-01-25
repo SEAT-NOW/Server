@@ -1,5 +1,6 @@
 package depth.main.seatnow.domain.auth.service;
 
+import depth.main.seatnow.domain.user.repository.UserRepository;
 import depth.main.seatnow.global.exception.custom.BadRequestException;
 import depth.main.seatnow.global.exception.error.ErrorCode;
 import lombok.RequiredArgsConstructor;
@@ -17,12 +18,17 @@ import java.util.concurrent.TimeUnit;
 public class EmailVerificationService {
     private final StringRedisTemplate redisTemplate;
     private final JavaMailSender mailSender;
+    private final UserRepository userRepository;
 
     @Value("${email.verification.expiry-time}")
     private long expiryTimeInMinutes;
 
     // 이메일 인증 코드 발송
     public void sendVerificationCode(String email) {
+        if (userRepository.existsByEmail(email)) {
+            throw new BadRequestException(ErrorCode.DUPLICATE_EMAIL);
+        }
+
         String verificationCode = generateVerificationCode();
 
         // Redis에 인증 코드 저장

@@ -18,7 +18,7 @@ import java.util.function.Function;
 
 @Getter
 @Builder
-public class StoreResponse {
+public class StoreDetailResponse {
 
     private Long storeId;
 
@@ -45,8 +45,8 @@ public class StoreResponse {
     private List<ImageDto> images; // 가게 사진
     private List<MenuCategoryDto> menuCategories; // 메뉴 정보
 
-    public static StoreResponse from(Store store) {
-        return StoreResponse.builder()
+    public static StoreDetailResponse from(Store store) {
+        return StoreDetailResponse.builder()
                 .storeId(store.getId())
                 .storeName(store.getStoreName())
                 .address(store.getAddress())

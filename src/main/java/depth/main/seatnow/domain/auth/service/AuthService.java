@@ -81,12 +81,11 @@ public class AuthService {
                 .map(Store::getId)
                 .orElse(null);
 
-        String accessToken = jwtUtil.createAccessToken(String.valueOf(user.getId()), user.getRole().toString());
-        String refreshToken = jwtUtil.createRefreshToken(String.valueOf(user.getId()));
+        AuthResponseDto.TokenDto tokenDto = createAndSaveTokens(user);
 
         return AuthResponseDto.TokenDto.builder()
-                .accessToken(accessToken)
-                .refreshToken(refreshToken)
+                .accessToken(tokenDto.getAccessToken())
+                .refreshToken(tokenDto.getRefreshToken())
                 .userId(user.getId())
                 .storeId(storeId)
                 .build();

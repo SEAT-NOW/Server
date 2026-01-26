@@ -82,20 +82,23 @@ public class VerificationController {
             ),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(
                     responseCode = "400",
-                    description = "잘못된 요청 (형식 오류 또는 중복 이메일)",
+                    description = "잘못된 요청 (형식 오류)",
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class),
-                            examples = {
-                                    @ExampleObject(
-                                            name = "잘못된 이메일 형식",
-                                            summary = "INVALID_REQUEST",
-                                            value = "{\"code\": \"4000\", \"message\": \"유효한 이메일 형식이 아닙니다.\"}"
-                                    ),
-                                    @ExampleObject(
-                                            name = "이미 가입된 이메일",
-                                            summary = "CONFLICT",
-                                            value = "{\"code\": \"4090\", \"message\": \"이미 존재하는 리소스입니다.\", \"detail\": \"해당 이메일로 가입된 계정이 이미 존재합니다.\"}"
-                                    )
-                            })
+                            examples = @ExampleObject(
+                                    name = "잘못된 이메일 형식",
+                                    summary = "INVALID_REQUEST",
+                                    value = "{\"code\": \"4000\", \"message\": \"유효한 이메일 형식이 아닙니다.\", \"detail\": \"null\"}"
+                            ))
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "409",
+                    description = "중복된 이메일 (이미 가입됨)",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    name = "이미 가입된 이메일",
+                                    summary = "CONFLICT",
+                                    value = "{\"code\": \"4091\", \"message\": \"이미 가입된 이메일입니다.\", \"detail\": \"null\"}"
+                            ))
             ),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(
                     responseCode = "500",

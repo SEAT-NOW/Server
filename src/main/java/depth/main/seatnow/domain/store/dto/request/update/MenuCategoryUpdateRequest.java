@@ -13,12 +13,12 @@ import java.util.List;
 @Schema(description = "메뉴 카테고리 일괄 수정 요청")
 public class MenuCategoryUpdateRequest {
     @Schema(description = "카테고리 수정 리스트")
-    private List<CategoryDto> categories;
+    private List<CategoryUpdateDto> categories;
 
     @Getter
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class CategoryDto {
+    public static class CategoryUpdateDto {
         @Schema(description = "카테고리 ID (신규 추가 시 null)", example = "1")
         private Long id;
 

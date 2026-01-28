@@ -92,13 +92,9 @@ public class StoreLookUpService {
     }
 
     public StoreDetailResponse getStoreDetails(Long storeId) {
-        Optional<Store> optionalStore = storeRepository.findById(storeId);
+        Store store = storeRepository.findById(storeId)
+                .orElseThrow(() -> new NotFoundException(ErrorCode.STORE_NOT_FOUND));
 
-        if (optionalStore.isEmpty()) {
-            throw new NotFoundException(ErrorCode.STORE_NOT_FOUND);
-        }
-
-        Store store = optionalStore.get();
         return StoreDetailResponse.from(store);
     }
 

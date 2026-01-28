@@ -44,7 +44,7 @@ public class StoreLookUpController {
     }
 
     @Operation(summary = "매장 상세 정보 조회", description = "매장의 메뉴, 운영시간 등 모든 상세 정보를 조회합니다.")
-    @GetMapping("/{storeId}")
+    @GetMapping("/details/{storeId}")
     public ApiResponse<StoreDetailResponse> getStoreDetails(
             @Parameter(description = "조회할 매장의 ID (PK)", required = true, example = "3")
             @PathVariable Long storeId) {

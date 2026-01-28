@@ -22,12 +22,12 @@ public class StoreKeepController {
             @AuthenticationPrincipal CustomUserDetails user,
             @PathVariable Long storeId
     ) {
-        boolean isKeeped = storeKeepService.keepStore(user.getUserId(), storeId);
+        boolean isKept = storeKeepService.keepStore(user.getUserId(), storeId);
 
-        if (isKeeped) {
-            return ApiResponse.ok(isKeeped, "즐겨찾기가 등록되었습니다.");
+        if (isKept) {
+            return ApiResponse.ok(isKept, "즐겨찾기가 등록되었습니다.");
         } else {
-            return ApiResponse.ok(isKeeped, "즐겨찾기가 취소되었습니다.");
+            return ApiResponse.ok(isKept, "즐겨찾기가 취소되었습니다.");
         }
     }
 }

@@ -10,4 +10,6 @@ import java.util.Optional;
 public interface StoreKeepRepository extends JpaRepository<StoreKeep, Long> {
 
     Optional<StoreKeep> findByUserAndStore(User user, Store store);
+
+    boolean existsByUserAndStore(User user, Store store);
 }

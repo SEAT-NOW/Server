@@ -45,7 +45,9 @@ public class StoreDetailResponse {
     private List<ImageDto> images; // 가게 사진
     private List<MenuCategoryDto> menuCategories; // 메뉴 정보
 
-    public static StoreDetailResponse from(Store store) {
+    private boolean isKept;
+
+    public static StoreDetailResponse from(Store store, boolean isKept) {
         return StoreDetailResponse.builder()
                 .storeId(store.getId())
                 .storeName(store.getStoreName())
@@ -62,6 +64,7 @@ public class StoreDetailResponse {
                 .temporaryHolidays(mapList(store.getTemporaryHolidays(), TemporaryHolidayDto::from))
                 .images(mapList(store.getImages(), ImageDto::from))
                 .menuCategories(mapList(store.getMenuCategories(), MenuCategoryDto::from))
+                .isKept(isKept)
                 .build();
     }
 

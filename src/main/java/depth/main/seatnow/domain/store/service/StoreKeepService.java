@@ -23,6 +23,7 @@ public class StoreKeepService {
     private final UserRepository userRepository;
     private final StoreRepository storeRepository;
 
+    @Transactional
     public boolean keepStore(Long userId, Long storeId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException(ErrorCode.STORE_NOT_FOUND));

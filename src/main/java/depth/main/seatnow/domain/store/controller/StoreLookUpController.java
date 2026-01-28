@@ -1,16 +1,14 @@
 package depth.main.seatnow.domain.store.controller;
 
 import depth.main.seatnow.domain.store.dto.response.StoreListResponse;
+import depth.main.seatnow.domain.store.dto.response.StoreDetailResponse;
 import depth.main.seatnow.domain.store.service.StoreLookUpService;
 import depth.main.seatnow.global.common.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -43,5 +41,14 @@ public class StoreLookUpController {
             @RequestParam(defaultValue = "0") Integer headCount) {
         List<StoreListResponse> response = storeService.searchStores(keyword, lat, lng, radius, headCount);
         return ApiResponse.ok(response, "조회에 성공하였습니다.");
+    }
+
+    @Operation(summary = "매장 상세 정보 조회", description = "매장의 메뉴, 운영시간 등 모든 상세 정보를 조회합니다.")
+    @GetMapping("/details/{storeId}")
+    public ApiResponse<StoreDetailResponse> getStoreDetails(
+            @Parameter(description = "조회할 매장의 ID (PK)", required = true, example = "3")
+            @PathVariable Long storeId) {
+        StoreDetailResponse storeInfo = storeService.getStoreDetails(storeId);
+        return ApiResponse.ok(storeInfo);
     }
 }

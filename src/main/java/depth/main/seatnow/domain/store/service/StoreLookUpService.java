@@ -2,8 +2,11 @@ package depth.main.seatnow.domain.store.service;
 
 import depth.main.seatnow.domain.store.dto.response.StoreListResponse;
 
+import depth.main.seatnow.domain.store.dto.response.StoreDetailResponse;
 import depth.main.seatnow.domain.store.entity.store.Store;
 import depth.main.seatnow.domain.store.repository.StoreRepository;
+import depth.main.seatnow.global.exception.custom.NotFoundException;
+import depth.main.seatnow.global.exception.error.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -11,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -87,6 +91,11 @@ public class StoreLookUpService {
         }
     }
 
+    public StoreDetailResponse getStoreDetails(Long storeId) {
+        Store store = storeRepository.findById(storeId)
+                .orElseThrow(() -> new NotFoundException(ErrorCode.STORE_NOT_FOUND));
 
+        return StoreDetailResponse.from(store);
+    }
 
 }

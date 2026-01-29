@@ -45,7 +45,7 @@ public class StoreDetailResponse {
     private List<ImageDto> images; // 가게 사진
     private List<MenuCategoryDto> menuCategories; // 메뉴 정보
 
-    private boolean isKept;
+    private boolean isKept; // 즐겨찾기 유무
 
     public static StoreDetailResponse from(Store store, boolean isKept) {
         return StoreDetailResponse.builder()

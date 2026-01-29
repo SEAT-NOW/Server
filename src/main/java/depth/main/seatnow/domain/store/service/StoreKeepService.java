@@ -1,7 +1,6 @@
 package depth.main.seatnow.domain.store.service;
 
 import depth.main.seatnow.domain.store.dto.response.KeptStoreListResponse;
-import depth.main.seatnow.domain.store.dto.response.StoreListResponse;
 import depth.main.seatnow.domain.store.entity.store.Store;
 import depth.main.seatnow.domain.store.entity.store.StoreKeep;
 import depth.main.seatnow.domain.store.repository.StoreKeepRepository;
@@ -28,6 +27,7 @@ public class StoreKeepService {
     private final UserRepository userRepository;
     private final StoreRepository storeRepository;
 
+    // 매장 킵하기(킵이 안돼 있으면 킵 or 킵 취소)
     @Transactional
     public boolean keepStore(Long userId, Long storeId) {
         User user = userRepository.findById(userId)
@@ -47,6 +47,7 @@ public class StoreKeepService {
         }
     }
 
+    // 킵한 매장 모두 반환
     public List<KeptStoreListResponse> getKeptStores(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException(ErrorCode.STORE_NOT_FOUND));
@@ -58,7 +59,7 @@ public class StoreKeepService {
         for (StoreKeep keep : keptStores) {
             Store store = keep.getStore();
 
-            store.updateOperationStatus(now);
+            store.updateOperationStatus(now);//반환 전 업데이트 해주기
 
             responseList.add(KeptStoreListResponse.from(store));
         }

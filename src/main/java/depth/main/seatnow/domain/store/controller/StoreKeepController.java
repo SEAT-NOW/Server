@@ -1,14 +1,14 @@
 package depth.main.seatnow.domain.store.controller;
 
+import depth.main.seatnow.domain.store.dto.response.KeptStoreListResponse;
 import depth.main.seatnow.domain.store.service.StoreKeepService;
 import depth.main.seatnow.global.common.ApiResponse;
 import depth.main.seatnow.global.security.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/stores")
@@ -29,5 +29,11 @@ public class StoreKeepController {
         } else {
             return ApiResponse.ok(isKept, "즐겨찾기가 취소되었습니다.");
         }
+    }
+
+    @GetMapping("/get-kept")
+    public ApiResponse<List<KeptStoreListResponse>> getKeptStores(@AuthenticationPrincipal CustomUserDetails user) {
+        List<KeptStoreListResponse> keptStores = storeKeepService.getKeptStores(user.getUserId());
+        return ApiResponse.ok(keptStores);
     }
 }

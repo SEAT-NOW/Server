@@ -1,6 +1,7 @@
 package depth.main.seatnow.domain.store.entity.store;
 
 import depth.main.seatnow.domain.user.entity.User;
+import depth.main.seatnow.global.common.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -9,7 +10,7 @@ import lombok.*;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
-public class StoreKeep {
+public class StoreKeep extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

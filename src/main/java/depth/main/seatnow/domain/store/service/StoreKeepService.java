@@ -52,7 +52,7 @@ public class StoreKeepService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException(ErrorCode.NOT_FOUND));
 
-        List<StoreKeep> keptStores = storeKeepRepository.findAllByUser(user);
+        List<StoreKeep> keptStores = storeKeepRepository.findAllByUserOrderByCreatedAtDesc(user);
         List<KeptStoreListResponse> responseList = new ArrayList<>();
         LocalDateTime now = LocalDateTime.now();
 

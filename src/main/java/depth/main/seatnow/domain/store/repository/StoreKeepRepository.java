@@ -14,5 +14,5 @@ public interface StoreKeepRepository extends JpaRepository<StoreKeep, Long> {
 
     boolean existsByUserAndStore(User user, Store store);
 
-    List<StoreKeep> findAllByUser(User user);
+    List<StoreKeep> findAllByUserOrderByCreatedAtDesc(User user);
 }

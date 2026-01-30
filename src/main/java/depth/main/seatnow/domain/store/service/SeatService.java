@@ -67,15 +67,8 @@ public class SeatService {
         }
 
         // 합산 및 태그 업데이트
-        int totalUsedSeats = 0;
-        for (Space space : store.getSpaces()) {
-            for (TableConfig table : space.getTableConfigs()) {
-                totalUsedSeats += (table.getUsedCount() * table.getTableType());
-            }
-        }
-
-        store.updateUsedSeatCount(totalUsedSeats);
-        store.updateStatusTag();
+        store.updateUsedSeatCount();
+        store.updateSeatModifiedAt();
 
         return SpaceSeatUpdateResponse.from(store);
     }

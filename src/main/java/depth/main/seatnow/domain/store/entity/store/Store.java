@@ -129,6 +129,22 @@ public class Store extends BaseTimeEntity {
         this.statusTag = SeatStatus.FREE;     // 0%이므로 초기 상태는 '여유'
     }
 
+    public void updateTotalSeatCount(){
+        this.totalSeatCount = this.spaces.stream()
+                .flatMap(space -> space.getTableConfigs().stream())
+                .mapToInt(config -> config.getTableType() * config.getTableCount())
+                .sum();
+    }
+
+    public void updateUsedSeatCount() {
+        this.usedSeatCount = this.spaces.stream()
+                .flatMap(space -> space.getTableConfigs().stream())
+                .mapToInt(config -> config.getUsedCount() * config.getTableType())
+                .sum();
+
+        updateStatusTag();
+    }
+
     public void updateOperationStatus(LocalDateTime now) {
         OperationStatus status = OperationStatus.CLOSED;
         LocalDate todayDate = now.toLocalDate();
@@ -197,8 +213,7 @@ public class Store extends BaseTimeEntity {
         this.operationStatus = status;
     }
 
-    public void updateUsedSeatCount(int totalUsedSeats) {
-        this.usedSeatCount = totalUsedSeats;
+    public void updateSeatModifiedAt(){
         this.seatModifiedAt = LocalDateTime.now();
     }
 

@@ -4,10 +4,12 @@ import depth.main.seatnow.domain.store.dto.response.StoreListResponse;
 import depth.main.seatnow.domain.store.dto.response.StoreDetailResponse;
 import depth.main.seatnow.domain.store.service.StoreLookUpService;
 import depth.main.seatnow.global.common.ApiResponse;
+import depth.main.seatnow.global.security.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -47,8 +49,16 @@ public class StoreLookUpController {
     @GetMapping("/details/{storeId}")
     public ApiResponse<StoreDetailResponse> getStoreDetails(
             @Parameter(description = "조회할 매장의 ID (PK)", required = true, example = "3")
-            @PathVariable Long storeId) {
-        StoreDetailResponse storeInfo = storeService.getStoreDetails(storeId);
+            @PathVariable Long storeId,
+            @AuthenticationPrincipal CustomUserDetails user
+            ) {
+
+        Long userId = null;
+        if (user != null) {
+            userId =  user.getUserId();
+        }
+
+        StoreDetailResponse storeInfo = storeService.getStoreDetails(storeId, userId);
         return ApiResponse.ok(storeInfo);
     }
 }

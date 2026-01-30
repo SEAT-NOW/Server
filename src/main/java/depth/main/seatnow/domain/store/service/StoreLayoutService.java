@@ -67,6 +67,9 @@ public class StoreLayoutService {
             }
         }
 
+        store.updateTotalSeatCount();
+        store.updateUsedSeatCount();
+        store.updateStatusTag();
     }
 
     private void updateTableConfigs(Space space, List<SpaceUpdateRequest.TableUpdateDto> tables) {

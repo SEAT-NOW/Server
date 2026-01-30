@@ -31,7 +31,7 @@ public class StoreKeepService {
     @Transactional
     public boolean keepStore(Long userId, Long storeId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new NotFoundException(ErrorCode.STORE_NOT_FOUND));
+                .orElseThrow(() -> new NotFoundException(ErrorCode.NOT_FOUND));
 
         Store store = storeRepository.findById(storeId)
                 .orElseThrow(() -> new NotFoundException(ErrorCode.STORE_NOT_FOUND));
@@ -50,7 +50,7 @@ public class StoreKeepService {
     // 킵한 매장 모두 반환
     public List<KeptStoreListResponse> getKeptStores(Long userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new NotFoundException(ErrorCode.STORE_NOT_FOUND));
+                .orElseThrow(() -> new NotFoundException(ErrorCode.NOT_FOUND));
 
         List<StoreKeep> keptStores = storeKeepRepository.findAllByUser(user);
         List<KeptStoreListResponse> responseList = new ArrayList<>();

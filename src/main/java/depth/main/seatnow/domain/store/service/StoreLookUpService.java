@@ -2,8 +2,14 @@ package depth.main.seatnow.domain.store.service;
 
 import depth.main.seatnow.domain.store.dto.response.StoreListResponse;
 
+import depth.main.seatnow.domain.store.dto.response.StoreDetailResponse;
 import depth.main.seatnow.domain.store.entity.store.Store;
+import depth.main.seatnow.domain.store.repository.StoreKeepRepository;
 import depth.main.seatnow.domain.store.repository.StoreRepository;
+import depth.main.seatnow.domain.user.entity.User;
+import depth.main.seatnow.domain.user.repository.UserRepository;
+import depth.main.seatnow.global.exception.custom.NotFoundException;
+import depth.main.seatnow.global.exception.error.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -11,12 +17,18 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class StoreLookUpService {
+
     private final StoreRepository storeRepository;
+    private final StoreKeepRepository storeKeepRepository;
+    private final UserRepository userRepository;
+
+
     @Transactional
     public List<StoreListResponse> searchStores(String keyword, Double lat, Double lng, Double radius, Integer headCount) {
         List<Store> stores;
@@ -87,6 +99,20 @@ public class StoreLookUpService {
         }
     }
 
+    public StoreDetailResponse getStoreDetails(Long storeId, Long userId) {
+        Store store = storeRepository.findById(storeId)
+                .orElseThrow(() -> new NotFoundException(ErrorCode.STORE_NOT_FOUND));
 
+        store.updateOperationStatus(LocalDateTime.now()); //상세 조회 전 매장 업데이트
+
+        boolean isKept = false;
+
+        if (userId != null) {
+            User user = userRepository.findById(userId)
+                    .orElseThrow(() -> new NotFoundException(ErrorCode.NOT_FOUND));
+            isKept = storeKeepRepository.existsByUserAndStore(user, store);
+        }
+        return StoreDetailResponse.from(store, isKept);
+    }
 
 }

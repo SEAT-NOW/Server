@@ -68,7 +68,6 @@ public class SeatService {
 
         // 합산 및 태그 업데이트
         store.updateUsedSeatCount();
-        store.updateStatusTag();
         store.updateSeatModifiedAt();
 
         return SpaceSeatUpdateResponse.from(store);

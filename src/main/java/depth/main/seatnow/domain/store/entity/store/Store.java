@@ -141,6 +141,8 @@ public class Store extends BaseTimeEntity {
                 .flatMap(space -> space.getTableConfigs().stream())
                 .mapToInt(config -> config.getUsedCount() * config.getTableType())
                 .sum();
+
+        updateStatusTag();
     }
 
     public void updateOperationStatus(LocalDateTime now) {

@@ -38,6 +38,7 @@ public class StoreKeepController {
     }
 
     @Operation(summary = "킵한 매장 조회하기", description = "유저가 킵한 매장을 모두 조회합니다.")
+    @PreAuthorize("hasRole('USER')")
     @GetMapping("/kept")
     public ApiResponse<List<KeptStoreListResponse>> getKeptStores(@AuthenticationPrincipal CustomUserDetails user) {
         List<KeptStoreListResponse> keptStores = storeKeepService.getKeptStores(user.getUserId());

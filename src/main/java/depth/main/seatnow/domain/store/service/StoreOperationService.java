@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 
@@ -105,6 +106,8 @@ public class StoreOperationService {
     public OperationInfoResponse getOperationInfo(Long userId) {
         Store store = storeRepository.findByUserId(userId)
                 .orElseThrow(() -> new NotFoundException(ErrorCode.STORE_NOT_FOUND));
+
+        store.updateOperationStatus(LocalDateTime.now());
 
         return OperationInfoResponse.of(store);
     }

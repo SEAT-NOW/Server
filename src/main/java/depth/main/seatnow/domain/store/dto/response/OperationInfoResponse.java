@@ -1,6 +1,7 @@
 package depth.main.seatnow.domain.store.dto.response;
 
 import depth.main.seatnow.domain.store.entity.operation.OpeningHour;
+import depth.main.seatnow.domain.store.entity.operation.OperationStatus;
 import depth.main.seatnow.domain.store.entity.operation.RegularHoliday;
 import depth.main.seatnow.domain.store.entity.operation.TemporaryHoliday;
 import depth.main.seatnow.domain.store.entity.store.Store;
@@ -19,6 +20,10 @@ import java.util.List;
 @AllArgsConstructor
 @Schema(description = "매장 운영 정보 응답")
 public class OperationInfoResponse {
+
+    @Schema(description = "현재 운영 상태", example = "OPEN / CLOSED / BREAK_TIME")
+    private OperationStatus operationStatus;
+
     @Schema(description = "정기 휴무 정보 리스트")
     private List<RegularHolidayDto> regularHolidays;
 
@@ -30,6 +35,7 @@ public class OperationInfoResponse {
 
     public static OperationInfoResponse of(Store store) {
         return OperationInfoResponse.builder()
+                .operationStatus(store.getOperationStatus())
                 .openingHours(store.getOpeningHours().stream()
                         .map(OpeningHourDto::from)
                         .toList())

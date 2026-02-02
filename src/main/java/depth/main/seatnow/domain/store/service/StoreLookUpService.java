@@ -3,10 +3,13 @@ package depth.main.seatnow.domain.store.service;
 import depth.main.seatnow.domain.store.dto.response.StoreListResponse;
 
 import depth.main.seatnow.domain.store.dto.response.StoreDetailResponse;
+import depth.main.seatnow.domain.store.dto.response.StoreSearchResponse;
 import depth.main.seatnow.domain.store.entity.store.Store;
 import depth.main.seatnow.domain.store.repository.StoreKeepRepository;
 import depth.main.seatnow.domain.store.repository.StoreRepository;
+import depth.main.seatnow.domain.store.repository.UniversityMasterRepository;
 import depth.main.seatnow.domain.user.entity.User;
+import depth.main.seatnow.domain.store.entity.university.UniversityMaster;
 import depth.main.seatnow.domain.user.repository.UserRepository;
 import depth.main.seatnow.global.exception.custom.NotFoundException;
 import depth.main.seatnow.global.exception.error.ErrorCode;
@@ -17,7 +20,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -27,21 +29,32 @@ public class StoreLookUpService {
     private final StoreRepository storeRepository;
     private final StoreKeepRepository storeKeepRepository;
     private final UserRepository userRepository;
+    private final UniversityMasterRepository universityMasterRepository;
 
 
     @Transactional
-    public List<StoreListResponse> searchStores(String keyword, Double lat, Double lng, Double radius, Integer headCount) {
+    public StoreSearchResponse searchStores(String keyword, String universityName, Double lat, Double lng, Double radius, Integer headCount) {
         List<Store> stores;
+        List<String> relatedUniversities = new ArrayList<>();
 
         // 목록 조회
-        if (keyword != null && !keyword.isBlank()) {
+        if (universityName != null && !universityName.isBlank()) {
+            // 대학 필터 클릭 시
+            stores = storeRepository.findByUniversityName(universityName);
+        }else if (keyword != null && !keyword.isBlank()) {
             // 키워드 검색
             stores = storeRepository.searchByKeyword(keyword);
+
+            // 연관 대학 추출
+            relatedUniversities = universityMasterRepository.findByNameContaining(keyword)
+                    .stream()
+                    .map(UniversityMaster::getName)
+                    .toList();
         } else if (lat != null && lng != null) {
             // 키워드가 없을 때만 위치 기반 반경 검색
             stores = storeRepository.searchByLocation(lat, lng, radius);
         } else {
-            return List.of();
+            return StoreSearchResponse.of(List.of(), List.of());
         }
 
         // 인원수 필터링
@@ -71,7 +84,7 @@ public class StoreLookUpService {
             responseList.add(StoreListResponse.from(store, distanceStr));
         }
 
-        return responseList;
+        return StoreSearchResponse.of(responseList, relatedUniversities);
     }
 
 

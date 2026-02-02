@@ -46,7 +46,9 @@ public class StoreProfileResponse {
                 .businessNumber(store.getBusinessNumber())
                 .storeName(store.getStoreName())
                 .address(store.getAddress())
-                .universityNames(store.getUniversityNames())
+                .universityNames(store.getStoreUniversities().stream()
+                        .map(su -> su.getUniversityMaster().getName())
+                        .toList())
                 .businessLicenseFileName(fileName)
                 .storePhone(store.getStorePhone())
                 .build();

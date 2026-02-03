@@ -22,10 +22,15 @@ public class MenuLikeController {
 
     @PostMapping("/{menuId}/like")
     @PreAuthorize("hasRole('USER')")
-    public ApiResponse<String> toggleLike(
+    public ApiResponse<Boolean> toggleLike(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @PathVariable Long menuId) {
-        menuLikeService.toggleMenuLike(userDetails.getUserId(), menuId);
-        return ApiResponse.ok("좋아요 상태가 변경되었습니다.");
+        boolean isLiked = menuLikeService.toggleMenuLike(userDetails.getUserId(), menuId);
+
+        if (isLiked) {
+            return ApiResponse.ok(isLiked, "좋아요가 눌렸습니다.");
+        } else {
+            return ApiResponse.ok(isLiked, "좋아요가 취소되었습니다.");
+        }
     }
 }

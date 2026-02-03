@@ -25,7 +25,9 @@ public class MenuLikeService {
 
     // 메뉴 좋아요 누르기(눌렀으면 취소, 안눌렀으면 누르기)
     @Transactional
-    public void toggleMenuLike(Long userId, Long menuId) {
+    public boolean toggleMenuLike(Long userId, Long menuId) {
+
+
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException(ErrorCode.NOT_FOUND));
 
@@ -39,10 +41,14 @@ public class MenuLikeService {
             MenuLike menuLike = existingLike.get();
             menuLikeRepository.delete(menuLike);
             menu.decreaseLikeCount();
+
+            return false;
         } else { // 좋아요 없으면 좋아요 누르기
             MenuLike newLike = MenuLike.builder().user(user).menu(menu).build();
             menuLikeRepository.save(newLike);
             menu.increaseLikeCount();
+
+            return true;
         }
     }
 }

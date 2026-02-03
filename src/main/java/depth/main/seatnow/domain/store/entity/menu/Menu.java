@@ -2,6 +2,7 @@ package depth.main.seatnow.domain.store.entity.menu;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.ColumnDefault;
 
 @Entity
 @Getter
@@ -25,10 +26,22 @@ public class Menu {
     @JoinColumn(name = "menu_category_id")
     private MenuCategory menuCategory;
 
+    @Column(nullable = false)
+    @ColumnDefault("0")
+    private Integer likeCount = 0;
+
     public void updateMenuDetails(String name, Integer price, String currentImageUrl, MenuCategory category) {
         this.name = name;
         this.price = price;
         this.imageUrl = currentImageUrl;
         this.menuCategory = category;
+    }
+
+    public void increaseLikeCount() {
+        likeCount++;
+    }
+
+    public void decreaseLikeCount() {
+        if (likeCount > 0) likeCount--;
     }
 }

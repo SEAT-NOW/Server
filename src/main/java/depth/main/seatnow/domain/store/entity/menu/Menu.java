@@ -28,6 +28,7 @@ public class Menu {
 
     @Column(nullable = false)
     @ColumnDefault("0")
+    @Builder.Default
     private Integer likeCount = 0;
 
     public void updateMenuDetails(String name, Integer price, String currentImageUrl, MenuCategory category) {

@@ -69,6 +69,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET,"/api/v1/stores/menus").hasRole("OWNER")
                         .requestMatchers(HttpMethod.GET,"/api/v1/stores/kept").hasRole("USER")
                         .requestMatchers(HttpMethod.POST,"/api/v1/stores/{storeId}/keep").hasRole("USER")
+                        .requestMatchers(HttpMethod.POST,"/api/v1/menus/{menuId}/like").hasRole("USER")
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(new JwtAuthenticationFilter(jwtUtil, customUserDetailsService),

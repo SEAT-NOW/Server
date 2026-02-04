@@ -4,6 +4,8 @@ import depth.main.seatnow.domain.store.dto.response.StoreListResponse;
 
 import depth.main.seatnow.domain.store.dto.response.StoreDetailResponse;
 import depth.main.seatnow.domain.store.dto.response.StoreSearchResponse;
+import depth.main.seatnow.domain.store.entity.menu.Menu;
+import depth.main.seatnow.domain.store.entity.menu.MenuCategory;
 import depth.main.seatnow.domain.store.entity.store.Store;
 import depth.main.seatnow.domain.store.repository.StoreKeepRepository;
 import depth.main.seatnow.domain.store.repository.StoreRepository;
@@ -14,11 +16,14 @@ import depth.main.seatnow.domain.user.repository.UserRepository;
 import depth.main.seatnow.global.exception.custom.NotFoundException;
 import depth.main.seatnow.global.exception.error.ErrorCode;
 import lombok.RequiredArgsConstructor;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 @Service
@@ -125,7 +130,52 @@ public class StoreLookUpService {
                     .orElseThrow(() -> new NotFoundException(ErrorCode.NOT_FOUND));
             isKept = storeKeepRepository.existsByUserAndStore(user, store);
         }
-        return StoreDetailResponse.from(store, isKept);
+
+        List<Long> bestMenuIds = getBestMenuIds(store);
+
+        return StoreDetailResponse.from(store, isKept,bestMenuIds);
+    }
+
+    /**
+     * 좋아요 메뉴 가져오기
+     * 조건: 좋아요 5개 이상, 상위 4개의 메뉴만, 좋아요 많은 순 정렬
+     */
+    @NotNull
+    private static List<Long> getBestMenuIds(Store store) {
+
+        List<Menu> bestMenuList = new ArrayList<>();
+
+        // 좋아요 5개 이상 메뉴만 선별
+        for (MenuCategory menuCategory : store.getMenuCategories()) {
+            for (Menu menu : menuCategory.getMenus()) {
+                if (menu.getLikeCount() >= 5) {
+                    bestMenuList.add(menu);
+                }
+            }
+        }
+
+        // 내림차순
+        bestMenuList.sort(new Comparator<Menu>() {
+            @Override
+            public int compare(Menu o1, Menu o2) {
+                return o2.getLikeCount().compareTo(o1.getLikeCount());
+            }
+        });
+
+        List<Long> result = new ArrayList<>();
+        int count = 0;
+
+        // 상위 4개 메뉴만 뽑아내기
+        for (Menu menu : bestMenuList) {
+            if (count >= 4) {
+                break;
+            }
+
+            result.add(menu.getId());
+            count++;
+        }
+
+        return result;
     }
 
 }

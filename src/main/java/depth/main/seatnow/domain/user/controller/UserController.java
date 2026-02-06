@@ -50,6 +50,7 @@ public class UserController {
 
     @Operation(summary = "내 정보 조회", description = "현재 로그인한 유저의 닉네임, 이메일 등 정보반환")
     @GetMapping("/me")
+    @PreAuthorize("hasRole('USER')")
     public ApiResponse<UserProfileResponse> getMyProfile(@AuthenticationPrincipal CustomUserDetails userDetails) {
         UserProfileResponse response = userService.getMyProfile(userDetails.getUserId());
         return ApiResponse.ok(response);

@@ -1,6 +1,7 @@
 package depth.main.seatnow.domain.user.controller;
 
 import depth.main.seatnow.domain.user.dto.request.VerifyPasswordRequest;
+import depth.main.seatnow.domain.user.dto.response.UserProfileResponse;
 import depth.main.seatnow.domain.user.service.UserService;
 import depth.main.seatnow.global.common.ApiResponse;
 import depth.main.seatnow.global.exception.error.ErrorResponse;
@@ -45,6 +46,12 @@ public class UserController {
     ) {
         userService.withdrawUser(userDetails);
         return ApiResponse.ok(null, "회원탈퇴가 완료되었습니다.");
+    }
+
+    @GetMapping("/me")
+    public ApiResponse<UserProfileResponse> getMyProfile(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        UserProfileResponse response = userService.getMyProfile(userDetails.getUserId());
+        return ApiResponse.ok(response);
     }
 
 }

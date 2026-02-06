@@ -1,5 +1,6 @@
 package depth.main.seatnow.domain.user.service;
 
+import depth.main.seatnow.domain.user.dto.response.UserProfileResponse;
 import depth.main.seatnow.domain.user.entity.User;
 import depth.main.seatnow.domain.user.repository.UserRepository;
 import depth.main.seatnow.global.exception.custom.BadRequestException;
@@ -25,5 +26,10 @@ public class UserService {
         userRepository.delete(user);
     }
 
+    public UserProfileResponse getMyProfile(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException(ErrorCode.NOT_FOUND));
+        return UserProfileResponse.from(user);
+    }
 
 }

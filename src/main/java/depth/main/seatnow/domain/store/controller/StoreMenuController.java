@@ -1,6 +1,7 @@
 package depth.main.seatnow.domain.store.controller;
 
 import depth.main.seatnow.domain.store.dto.request.update.MenuCategoryUpdateRequest;
+import depth.main.seatnow.domain.store.dto.request.update.MenuOrderUpdate;
 import depth.main.seatnow.domain.store.dto.request.update.MenuUpdateRequest;
 import depth.main.seatnow.domain.store.dto.response.StoreMenuResponse;
 import depth.main.seatnow.domain.store.service.StoreMenuService;
@@ -160,5 +161,71 @@ public class StoreMenuController {
     ) {
         StoreMenuResponse response = storeMenuService.getStoreMenus(userDetails.getUserId());
         return ApiResponse.ok(response, "매장 메뉴 정보를 성공적으로 조회하였습니다.");
+    }
+
+    @Operation(
+            summary = "메뉴 순서 일괄 변경 [인증 필요]",
+            description = "04-2-2 메뉴 상세 편집에서 드래그 앤 드롭 등으로 변경된 메뉴의 순서를 일괄 저장합니다.\n\n" +
+                    "- **categoryId**: 메뉴들이 속한 카테고리의 ID\n" +
+                    "- **menuIds**: 변경된 순서대로 나열된 메뉴 ID 리스트",
+            security = { @SecurityRequirement(name = "bearerAuth") }
+    )
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "200",
+                    description = "순서 변경 성공",
+                    content = @Content(
+                            schema = @Schema(implementation = ApiResponse.class),
+                            examples = @ExampleObject(
+                                    value = "{\"success\": true, \"data\": true, \"message\": \"메뉴 순서가 성공적으로 변경되었습니다.\"}"))
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "400",
+                    description = "잘못된 요청 (카테고리 불일치 등)",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = @ExampleObject(
+                                    name = "카테고리 불일치",
+                                    value = "{\"code\": \"4005\", \"message\": \"해당 카테고리에 속하지 않은 메뉴가 포함되어 있습니다.\", \"detail\": null}"))
+            )
+    })
+    @PatchMapping("/order")
+    @PreAuthorize("hasRole('OWNER')")
+    public ApiResponse<Boolean> updateMenuOrder(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestBody @Valid MenuOrderUpdate request
+    ) {
+        storeMenuService.updateMenuOrder(request);
+        return ApiResponse.ok(true, "메뉴 순서가 성공적으로 변경되었습니다.");
+    }
+
+    @Operation(
+            summary = "개별 메뉴 삭제 [인증 필요]",
+            description = "04-2-2 메뉴 상세 편집에서 특정 메뉴를 삭제합니다.",
+            security = { @SecurityRequirement(name = "bearerAuth") }
+    )
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "200",
+                    description = "삭제 성공",
+                    content = @Content(
+                            schema = @Schema(implementation = ApiResponse.class),
+                            examples = @ExampleObject(
+                                    value = "{\"success\": true, \"data\": true, \"message\": \"메뉴가 성공적으로 삭제되었습니다.\"}"))
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "404",
+                    description = "메뉴를 찾을 수 없음",
+                    content = @Content(mediaType = "application/json")
+            )
+    })
+    @DeleteMapping("/{menuId}")
+    @PreAuthorize("hasRole('OWNER')")
+    public ApiResponse<Boolean> deleteMenu(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @Parameter(description = "삭제할 메뉴 ID", example = "1") @PathVariable Long menuId
+    ) {
+        storeMenuService.deleteMenu(userDetails.getUserId(), menuId);
+        return ApiResponse.ok(true, "메뉴가 성공적으로 삭제되었습니다.");
     }
 }

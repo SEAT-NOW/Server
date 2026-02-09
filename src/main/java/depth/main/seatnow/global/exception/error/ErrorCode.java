@@ -13,6 +13,7 @@ public enum ErrorCode {
     EXPIRED_VERIFICATION_CODE(HttpStatus.BAD_REQUEST, "4003", "인증 시간이 만료되었습니다. 다시 시도해주세요."),
     INVALID_TABLE_COUNT(HttpStatus.BAD_REQUEST,"4004", "사용 중인 테이블 수는 전체 테이블 수를 초과할 수 없습니다."),
     PASSWORD_MISMATCH(HttpStatus.BAD_REQUEST, "4005", "유효하지 않은 비밀번호입니다."),
+    INVALID_MENU_CATEGORY(HttpStatus.BAD_REQUEST, "4006", "해당 카테고리에 속하지 않은 메뉴가 포함되어 있습니다."),
 
     UNAUTHORIZED(HttpStatus.UNAUTHORIZED,"4010", "인증이 필요합니다."),
     INVALID_TOKEN(HttpStatus.UNAUTHORIZED,"4011", "잘못된 토큰입니다."),

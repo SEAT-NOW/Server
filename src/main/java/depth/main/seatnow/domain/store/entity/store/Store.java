@@ -89,6 +89,7 @@ public class Store extends BaseTimeEntity {
 
     @Builder.Default
     @OneToMany(mappedBy = "store", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderBy("sortOrder ASC")
     private List<MenuCategory> menuCategories = new ArrayList<>();
 
     @Builder.Default

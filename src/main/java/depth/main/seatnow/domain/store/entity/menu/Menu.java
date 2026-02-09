@@ -14,6 +14,9 @@ public class Menu {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "sort_order")
+    private int sortOrder; // 순서 필드 추가
+
     @Column(nullable = false)
     private String name; // 메뉴명
 
@@ -44,5 +47,9 @@ public class Menu {
 
     public void decreaseLikeCount() {
         if (likeCount > 0) likeCount--;
+    }
+
+    public void updateSortOrder(int sortOrder) {
+        this.sortOrder = sortOrder;
     }
 }

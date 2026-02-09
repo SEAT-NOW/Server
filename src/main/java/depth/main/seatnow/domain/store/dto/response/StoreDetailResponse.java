@@ -70,7 +70,7 @@ public class StoreDetailResponse {
     @Schema(description = "즐겨찾기 여부", example = "true")
     private boolean isKept; // 즐겨찾기 유무
 
-    public static StoreDetailResponse from(Store store, boolean isKept, List<Long> bestMenuIds) {
+    public static StoreDetailResponse from(Store store, boolean isKept, List<Long> bestMenuIds, List<Long> likedMenuIds) {
         return StoreDetailResponse.builder()
                 .storeId(store.getId())
                 .storeName(store.getStoreName())
@@ -89,7 +89,7 @@ public class StoreDetailResponse {
                 .temporaryHolidays(mapList(store.getTemporaryHolidays(), TemporaryHolidayDto::from))
                 .images(mapList(store.getImages(), ImageDto::from))
                 .menuCategories(store.getMenuCategories().stream()
-                        .map(mc -> MenuCategoryDto.from(mc, bestMenuIds))
+                        .map(mc -> MenuCategoryDto.from(mc, bestMenuIds, likedMenuIds))
                         .toList())
                 .isKept(isKept)
                 .build();
@@ -124,20 +124,27 @@ public class StoreDetailResponse {
     }
 
     private record MenuCategoryDto(Long id, String name, List<MenuDto> menus) {
-        private static MenuCategoryDto from(MenuCategory mc, List<Long> bestMenuIds) {
+        private static MenuCategoryDto from(MenuCategory mc, List<Long> bestMenuIds, List<Long> likedMenuIds) {
             return new MenuCategoryDto(
                     mc.getId(),
                     mc.getName(),
                     mc.getMenus().stream()
-                            .map(menu -> MenuDto.from(menu, bestMenuIds))
+                            .map(menu -> MenuDto.from(menu, bestMenuIds, likedMenuIds))
                             .toList()
             );
         }
     }
 
-    private record MenuDto(Long id, String name, Integer price, String imageUrl,boolean isBest) {
-        private static MenuDto from(Menu m, List<Long> bestMenuIds) {
-            return new MenuDto(m.getId(), m.getName(), m.getPrice(), m.getImageUrl(), bestMenuIds.contains(m.getId()));
+    private record MenuDto(Long id, String name, Integer price, String imageUrl, boolean isBest, boolean isLiked) {
+        private static MenuDto from(Menu m, List<Long> bestMenuIds, List<Long> likedMenuIds) {
+            return new MenuDto(
+                    m.getId(),
+                    m.getName(),
+                    m.getPrice(),
+                    m.getImageUrl(),
+                    bestMenuIds.contains(m.getId()),
+                    likedMenuIds.contains(m.getId())
+            );
         }
     }
 }

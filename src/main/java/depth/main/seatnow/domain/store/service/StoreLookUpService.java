@@ -7,6 +7,7 @@ import depth.main.seatnow.domain.store.dto.response.StoreSearchResponse;
 import depth.main.seatnow.domain.store.entity.menu.Menu;
 import depth.main.seatnow.domain.store.entity.menu.MenuCategory;
 import depth.main.seatnow.domain.store.entity.store.Store;
+import depth.main.seatnow.domain.store.repository.MenuLikeRepository;
 import depth.main.seatnow.domain.store.repository.StoreKeepRepository;
 import depth.main.seatnow.domain.store.repository.StoreRepository;
 import depth.main.seatnow.domain.store.repository.UniversityMasterRepository;
@@ -22,7 +23,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
@@ -35,6 +35,7 @@ public class StoreLookUpService {
     private final StoreKeepRepository storeKeepRepository;
     private final UserRepository userRepository;
     private final UniversityMasterRepository universityMasterRepository;
+    private final MenuLikeRepository menuLikeRepository;
 
 
     @Transactional
@@ -124,16 +125,19 @@ public class StoreLookUpService {
         store.updateOperationStatus(LocalDateTime.now()); //상세 조회 전 매장 업데이트
 
         boolean isKept = false;
+        List<Long> likedMenuIds = new ArrayList<>();
 
         if (userId != null) {
             User user = userRepository.findById(userId)
                     .orElseThrow(() -> new NotFoundException(ErrorCode.NOT_FOUND));
             isKept = storeKeepRepository.existsByUserAndStore(user, store);
+
+            likedMenuIds = menuLikeRepository.findLikedMenuIds(userId, storeId);
         }
 
         List<Long> bestMenuIds = getBestMenuIds(store);
 
-        return StoreDetailResponse.from(store, isKept,bestMenuIds);
+        return StoreDetailResponse.from(store, isKept, bestMenuIds, likedMenuIds);
     }
 
     /**

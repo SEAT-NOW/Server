@@ -22,5 +22,13 @@ public interface StoreRepository extends JpaRepository<Store, Long> {
     @Query("SELECT s FROM Store s WHERE s.storeName LIKE CONCAT('%', :keyword, '%') OR s.address LIKE CONCAT('%', :keyword, '%') ORDER BY s.modifiedAt DESC")
     List<Store> searchByKeyword(@Param("keyword") String keyword);
 
+    // 특정 대학교 이름을 가진 술집들 검색
+    @Query("SELECT DISTINCT s FROM Store s " +
+            "JOIN s.storeUniversities su " +
+            "JOIN su.universityMaster um " +
+            "WHERE um.name = :universityName " +
+            "ORDER BY s.seatModifiedAt DESC")
+    List<Store> findByUniversityName(@Param("universityName") String universityName);
+
     Optional<Store> findByUserId(Long userId);
 }

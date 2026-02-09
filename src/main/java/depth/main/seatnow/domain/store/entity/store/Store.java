@@ -7,6 +7,7 @@ import depth.main.seatnow.domain.store.entity.operation.RegularHoliday;
 import depth.main.seatnow.domain.store.entity.operation.TemporaryHoliday;
 import depth.main.seatnow.domain.store.entity.seat.Space;
 import depth.main.seatnow.domain.store.entity.seat.enums.SeatStatus;
+import depth.main.seatnow.domain.store.entity.university.StoreUniversity;
 import depth.main.seatnow.domain.user.entity.User;
 import depth.main.seatnow.global.common.BaseTimeEntity;
 import jakarta.persistence.*;
@@ -54,14 +55,9 @@ public class Store extends BaseTimeEntity {
     @Column(nullable = false)
     private Double longitude; // 경도
 
-    @ElementCollection // 1:N 관계의 단순 문자열 리스트를 저장
-    @CollectionTable(
-            name = "store_university",
-            joinColumns = @JoinColumn(name = "store_id")
-    )
-    @Column(name = "university_name")
     @Builder.Default
-    private List<String> universityNames = new ArrayList<>();
+    @OneToMany(mappedBy = "store", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<StoreUniversity> storeUniversities = new ArrayList<>();
 
     @Column(nullable = true)
     private String storePhone; // 가게 연락처

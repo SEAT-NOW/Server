@@ -14,7 +14,11 @@ import depth.main.seatnow.domain.store.entity.seat.Space;
 import depth.main.seatnow.domain.store.entity.seat.TableConfig;
 import depth.main.seatnow.domain.store.entity.store.Store;
 import depth.main.seatnow.domain.store.entity.store.StoreImage;
+import depth.main.seatnow.domain.store.entity.university.StoreUniversity;
+import depth.main.seatnow.domain.store.entity.university.UniversityMaster;
 import depth.main.seatnow.domain.store.repository.StoreRepository;
+import depth.main.seatnow.domain.store.repository.StoreUniversityRepository;
+import depth.main.seatnow.domain.store.repository.UniversityMasterRepository;
 import depth.main.seatnow.domain.user.entity.User;
 import depth.main.seatnow.domain.user.entity.enums.Role;
 import depth.main.seatnow.domain.user.repository.UserRepository;
@@ -42,6 +46,8 @@ public class StoreAccountService {
     private final StoreRepository storeRepository;
     private final S3UploadService s3UploadService;
     private final PasswordEncoder passwordEncoder;
+    private final UniversityMasterRepository universityMasterRepository;
+    private final StoreUniversityRepository storeUniversityRepository;
     @Transactional
     public Long registerOwner(OwnerSignupRequest request, MultipartFile licenseImage, List<MultipartFile> storeImages) {
         // 계정 중복 검증
@@ -78,7 +84,6 @@ public class StoreAccountService {
                 .neighborhood(request.getBusiness().getNeighborhood())
                 .latitude(request.getBusiness().getLatitude())
                 .longitude(request.getBusiness().getLongitude())
-                .universityNames(request.getBusiness().getUniversityNames())
                 .storePhone(request.getBusiness().getStorePhone())
                 .businessLicenseUrl(licenseUrl)
                 .build();
@@ -97,6 +102,8 @@ public class StoreAccountService {
 
         // 가게 저장
         Store saveStore = storeRepository.save(store);
+
+        mapUniversities(request.getBusiness().getUniversityNames(), saveStore);
 
         return saveStore.getId();
     }
@@ -225,5 +232,23 @@ public class StoreAccountService {
         }
     }
 
+    private void mapUniversities(List<String> universityNames, Store saveStore) {
+        if (universityNames == null) return;
 
+        for (String name : universityNames) {
+            // 대학 마스터 테이블에서 조회, 없으면 생성
+            UniversityMaster university = universityMasterRepository.findByName(name)
+                    .orElseGet(() -> universityMasterRepository.save(
+                            UniversityMaster.builder().name(name).build()
+                    ));
+
+            // 브릿지 엔티티 생성 및 저장
+            StoreUniversity storeUniversity = StoreUniversity.builder()
+                    .store(saveStore)
+                    .universityMaster(university)
+                    .build();
+
+            storeUniversityRepository.save(storeUniversity);
+        }
+    }
 }

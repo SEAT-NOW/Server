@@ -208,14 +208,15 @@ public class StoreAccountService {
     private void createDefaultCategories(Store store) {
         List<String> defaultNames = List.of("메인 메뉴", "사이드 메뉴", "주류");
 
-        defaultNames.forEach(name ->{
+        for (int i = 0; i < defaultNames.size(); i++) {
             MenuCategory category = MenuCategory.builder()
-                    .name(name)
+                    .name(defaultNames.get(i))
+                    .sortOrder(i)
                     .store(store)
                     .build();
 
             store.getMenuCategories().add(category);
-        });
+        }
     }
 
     private void uploadAndMapImages(List<MultipartFile> storeImages, Store store) {

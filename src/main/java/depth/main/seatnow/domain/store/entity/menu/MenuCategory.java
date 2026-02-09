@@ -16,6 +16,9 @@ public class MenuCategory {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "sort_order")
+    private int sortOrder;
+
     @Column(nullable = false)
     private String name;
 
@@ -25,9 +28,14 @@ public class MenuCategory {
 
     @Builder.Default
     @OneToMany(mappedBy = "menuCategory", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderBy("sortOrder ASC")
     private List<Menu> menus = new ArrayList<>();
 
     public void updateName(String name) {
         this.name = name;
+    }
+
+    public void updateSortOrder(int sortOrder) {
+        this.sortOrder = sortOrder;
     }
 }

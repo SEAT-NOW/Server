@@ -1,6 +1,7 @@
 package depth.main.seatnow.domain.store.service;
 
 import depth.main.seatnow.domain.store.dto.request.update.MenuCategoryUpdateRequest;
+import depth.main.seatnow.domain.store.dto.request.update.MenuOrderUpdate;
 import depth.main.seatnow.domain.store.dto.request.update.MenuUpdateRequest;
 import depth.main.seatnow.domain.store.dto.response.StoreMenuResponse;
 import depth.main.seatnow.domain.store.entity.menu.Menu;
@@ -9,6 +10,8 @@ import depth.main.seatnow.domain.store.entity.store.Store;
 import depth.main.seatnow.domain.store.repository.MenuCategoryRepository;
 import depth.main.seatnow.domain.store.repository.MenuRepository;
 import depth.main.seatnow.domain.store.repository.StoreRepository;
+import depth.main.seatnow.global.exception.custom.BadRequestException;
+import depth.main.seatnow.global.exception.custom.ForbiddenException;
 import depth.main.seatnow.global.exception.custom.NotFoundException;
 import depth.main.seatnow.global.exception.error.ErrorCode;
 import depth.main.seatnow.infrastructure.external.s3.S3UploadService;
@@ -45,19 +48,22 @@ public class StoreMenuService {
         currentCategories.removeIf(category -> !keepIds.contains(category.getId()));
 
         // 2. 수정 및 추가
-        for (MenuCategoryUpdateRequest.CategoryUpdateDto dto : request.getCategories()) {
+        for (int i = 0; i < request.getCategories().size(); i++) {
+            MenuCategoryUpdateRequest.CategoryUpdateDto dto = request.getCategories().get(i);
             if (dto.getId() != null) {
-                // 수정: 기존 ID가 있으면 이름 업데이트
+                // 수정: 기존 ID가 있으면 이름과 순서 업데이트
                 MenuCategory category = currentCategories.stream()
                         .filter(cat -> cat.getId().equals(dto.getId()))
                         .findFirst()
                         .orElseThrow(() -> new NotFoundException(ErrorCode.CATEGORY_NOT_FOUND));
 
                 category.updateName(dto.getName());
+                category.updateSortOrder(i);
             } else {
                 // 추가: ID가 없으면 신규 생성 후 리스트에 추가
                 currentCategories.add(MenuCategory.builder()
                         .name(dto.getName())
+                        .sortOrder(i)
                         .store(store)
                         .build());
             }
@@ -79,11 +85,15 @@ public class StoreMenuService {
                 imageUrl = s3UploadService.uploadFileToPath(menuImage, "permanent/menu");
             }
 
+            // 현재 카테고리 속한 메뉴 개수 파악해서 마지막 순번을 정해줌
+            int nextOrder = category.getMenus().size();
+
             Menu newMenu = Menu.builder()
                     .name(request.getName())
                     .price(request.getPrice())
                     .imageUrl(imageUrl)
                     .menuCategory(category)
+                    .sortOrder(nextOrder)
                     .build();
             menuRepository.save(newMenu);
         }else {
@@ -113,5 +123,45 @@ public class StoreMenuService {
                 .orElseThrow(() -> new NotFoundException(ErrorCode.STORE_NOT_FOUND));
 
         return StoreMenuResponse.of(store.getMenuCategories());
+    }
+    @Transactional
+    public void updateMenuOrder(MenuOrderUpdate request) {
+        for (MenuOrderUpdate.CategoryOrderDto categoryDto : request.getCategoryOrders()) {
+
+            Long categoryId = categoryDto.getCategoryId();
+            List<Long> menuIds = categoryDto.getMenuIds();
+
+            for (int i = 0; i < menuIds.size(); i++) {
+                Long menuId = menuIds.get(i);
+                Menu menu = menuRepository.findById(menuId)
+                        .orElseThrow(() -> new NotFoundException(ErrorCode.MENU_NOT_FOUND));
+
+                // 해당 카테고리 소속인지 확인
+                if (!menu.getMenuCategory().getId().equals(categoryId)) {
+                    throw new BadRequestException(ErrorCode.INVALID_MENU_CATEGORY);
+                }
+
+                menu.updateSortOrder(i);
+            }
+        }
+    }
+    @Transactional
+    public void deleteMenu(Long userId, Long menuId) {
+        Store store = storeRepository.findByUserId(userId)
+                .orElseThrow(() -> new NotFoundException(ErrorCode.STORE_NOT_FOUND));
+
+        Menu menu = menuRepository.findById(menuId)
+                .orElseThrow(() -> new NotFoundException(ErrorCode.MENU_NOT_FOUND));
+
+        if (!menu.getMenuCategory().getStore().getId().equals(store.getId())) {
+            throw new ForbiddenException(ErrorCode.FORBIDDEN);
+        }
+
+        if (menu.getImageUrl() != null) {
+            s3UploadService.deleteFile(menu.getImageUrl());
+        }
+
+        menuRepository.delete(menu);
+
     }
 }

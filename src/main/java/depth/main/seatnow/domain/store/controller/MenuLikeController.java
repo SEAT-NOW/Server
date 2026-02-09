@@ -3,6 +3,8 @@ package depth.main.seatnow.domain.store.controller;
 import depth.main.seatnow.domain.store.service.MenuLikeService;
 import depth.main.seatnow.global.common.ApiResponse;
 import depth.main.seatnow.global.security.CustomUserDetails;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -20,10 +22,12 @@ public class MenuLikeController {
 
     private final MenuLikeService menuLikeService;
 
+    @Operation(summary = "메뉴 좋아요 등록/취소", description = "특정 메뉴에 좋아요를 누르거나 취소하기.")
     @PostMapping("/{menuId}/like")
     @PreAuthorize("hasRole('USER')")
     public ApiResponse<Boolean> toggleLike(
             @AuthenticationPrincipal CustomUserDetails userDetails,
+            @Parameter(description = "좋아요를 누를 메뉴의 ID", required = true, example = "3")
             @PathVariable Long menuId) {
         boolean isLiked = menuLikeService.toggleMenuLike(userDetails.getUserId(), menuId);
 

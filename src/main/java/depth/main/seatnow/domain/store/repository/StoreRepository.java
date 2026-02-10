@@ -19,7 +19,11 @@ public interface StoreRepository extends JpaRepository<Store, Long> {
     List<Store> searchByLocation(@Param("lat") double lat, @Param("lng") double lng, @Param("radius") double radius);
 
     // 키워드 검색
-    @Query("SELECT s FROM Store s WHERE s.storeName LIKE CONCAT('%', :keyword, '%') OR s.address LIKE CONCAT('%', :keyword, '%') ORDER BY s.modifiedAt DESC")
+    @Query("SELECT s FROM Store s " +
+            "WHERE s.storeName LIKE CONCAT('%', :keyword, '%') " +
+            "OR s.address LIKE CONCAT('%', :keyword, '%') " +
+            "OR s.neighborhood LIKE CONCAT('%', :keyword, '%') " +
+            "ORDER BY s.modifiedAt DESC")
     List<Store> searchByKeyword(@Param("keyword") String keyword);
 
     // 특정 대학교 이름을 가진 술집들 검색

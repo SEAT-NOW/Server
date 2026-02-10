@@ -31,6 +31,8 @@ public class GooglePlacesClient {
         headers.set("X-Goog-Api-Key", apiKey);
         headers.set("X-Goog-FieldMask", fieldMask);
 
+        headers.set("Accept-Language", "ko");
+
         HttpEntity<GoogleNearbySearchRequest> entity = new HttpEntity<>(request, headers);
 
         try {

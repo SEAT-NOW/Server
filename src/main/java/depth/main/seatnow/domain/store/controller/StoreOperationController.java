@@ -158,7 +158,7 @@ public class StoreOperationController {
     public ApiResponse<Boolean> updateStoreImages(
             @AuthenticationPrincipal CustomUserDetails userDetails,
 
-            @RequestPart("updateData", required = false)
+            @RequestPart(value = "updateData", required = false)
             @Parameter(description = "기존 이미지 관리 정보 (JSON)", required = false)
             @Valid StorePhotoUpdateRequest request,
 

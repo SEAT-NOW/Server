@@ -15,7 +15,7 @@ public class Menu {
     private Long id;
 
     @Column(name = "sort_order")
-    private int sortOrder; // 순서 필드 추가
+    private Integer sortOrder; // 순서 필드 추가
 
     @Column(nullable = false)
     private String name; // 메뉴명
@@ -49,7 +49,7 @@ public class Menu {
         if (likeCount > 0) likeCount--;
     }
 
-    public void updateSortOrder(int sortOrder) {
+    public void updateSortOrder(Integer sortOrder) {
         this.sortOrder = sortOrder;
     }
 }

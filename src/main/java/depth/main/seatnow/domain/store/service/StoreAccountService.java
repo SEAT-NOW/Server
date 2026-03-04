@@ -127,7 +127,6 @@ public class StoreAccountService {
         }
 
         // 삭제
-        storeRepository.delete(store);
         userRepository.delete(owner);
     }
 

@@ -17,7 +17,7 @@ public class MenuCategory {
     private Long id;
 
     @Column(name = "sort_order")
-    private int sortOrder;
+    private Integer sortOrder;
 
     @Column(nullable = false)
     private String name;
@@ -35,7 +35,7 @@ public class MenuCategory {
         this.name = name;
     }
 
-    public void updateSortOrder(int sortOrder) {
+    public void updateSortOrder(Integer sortOrder) {
         this.sortOrder = sortOrder;
     }
 }

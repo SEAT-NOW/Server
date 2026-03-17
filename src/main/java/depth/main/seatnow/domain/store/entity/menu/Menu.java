@@ -4,6 +4,9 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -33,6 +36,10 @@ public class Menu {
     @ColumnDefault("0")
     @Builder.Default
     private Integer likeCount = 0;
+
+    @Builder.Default
+    @OneToMany(mappedBy = "menu", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<MenuLike> menuLikes = new ArrayList<>();
 
     public void updateMenuDetails(String name, Integer price, String currentImageUrl, MenuCategory category) {
         this.name = name;

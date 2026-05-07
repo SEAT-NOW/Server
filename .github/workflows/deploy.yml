@@ -19,9 +19,11 @@ jobs:
           distribution: 'corretto'
 
       - name: Make application-secret.yml
+        env:
+          SECRET_DATA: ${{ secrets.APPLICATION_SECRET }}
         run: |
           mkdir -p src/main/resources
-          echo "${{ secrets.APPLICATION_SECRET }}" > src/main/resources/application-secret.yml
+          echo "$SECRET_DATA" > src/main/resources/application-secret.yml
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew

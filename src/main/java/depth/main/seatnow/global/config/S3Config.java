@@ -12,17 +12,17 @@ import java.net.URI;
 
 @Configuration
 public class S3Config {
-    @Value("${spring.cloud.aws.credentials.access-key}")
+    @Value("${cloud.aws.credentials.access-key}")
     private String accessKey;
 
-    @Value("${spring.cloud.aws.credentials.secret-key}")
+    @Value("${cloud.aws.credentials.secret-key}")
     private String secretKey;
 
-    @Value("${spring.cloud.aws.region.static}")
+    @Value("${cloud.aws.region.static}")
     private String region;
 
     // ★ YAML에서 오라클 주소를 가져오는 코드 추가
-    @Value("${spring.cloud.aws.s3.endpoint}")
+    @Value("${cloud.aws.s3.endpoint}")
     private String endpoint;
 
     @Bean

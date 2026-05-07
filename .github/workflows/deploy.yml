@@ -26,9 +26,11 @@ jobs:
           echo "$SECRET_DATA" > src/main/resources/application-secret.yml
 
       - name: Create application-prod.yml
+        env:
+          PROD_DATA: ${{ secrets.APPLICATION_PROD_YML }}
         run: |
           mkdir -p src/main/resources
-          echo "${{ secrets.APPLICATION_PROD_YML }}" > src/main/resources/application-prod.yml
+          echo "$PROD_DATA" > src/main/resources/application-prod.yml
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
@@ -55,6 +57,7 @@ jobs:
           key: ${{ secrets.OCI_SSH_KEY }}
           script: |
             sudo docker pull ${{ secrets.DOCKER_USERNAME }}/seatnow-app:latest
-            sudo docker-compose down
-            sudo docker-compose up -d
+            # 🚨 수정됨: 하이픈(-)을 제거한 최신 docker compose 명령어를 사용해야 합니다.
+            sudo docker compose down
+            sudo docker compose up -d
             sudo docker image prune -f

@@ -16,7 +16,7 @@ public class SmsVerificationService {
     private final StringRedisTemplate redisTemplate;
     private final depth.main.seatnow.domain.auth.service.CoolSmsService coolSmsService;
 
-    @Value("${coolsms.sms.verification.expiry-time}")
+    @Value("${coolsms.verification.expiry-time}")
     private long expiryTimeInMinutes;  // 인증 코드 유효 시간 (분 단위)
 
     // SMS 인증 코드 발송

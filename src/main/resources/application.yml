@@ -1,7 +1,8 @@
 spring:
   profiles:
     active: local
-    include: secret
+  config:
+    import: classpath:application-secret.yml
 
   servlet:
     multipart:

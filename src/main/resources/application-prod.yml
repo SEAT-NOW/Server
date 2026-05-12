@@ -1,0 +1,27 @@
+spring:
+  # 🚨 상단의 activate: on-profile 부분을 완전히 삭제했습니다.
+
+  datasource:
+    url: ${PROD_DB_URL}
+    username: ${PROD_DB_USERNAME}
+    password: ${PROD_DB_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+
+  data:
+    redis:
+      host: ${PROD_REDIS_HOST}
+      port: ${PROD_REDIS_PORT}
+
+  jpa:
+    hibernate:
+      # 처음 배포 시에는 테이블이 없으므로 update로 설정합니다.
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+kakao:
+  auth:
+    redirect: "http://168.107.16.135:8080/auth/login/kakao"

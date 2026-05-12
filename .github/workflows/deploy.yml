@@ -18,8 +18,7 @@ jobs:
           java-version: '21'
           distribution: 'corretto'
 
-      # ⭐️ 추가된 부분: 빌드 전 application-secret.yml 생성
-      - name: application-secret.yml 생성
+      - name: application-secret.yml 동적 생성
         run: |
           mkdir -p src/main/resources
           echo "${{ secrets.APPLICATION_SECRET }}" > src/main/resources/application-secret.yml
@@ -47,13 +46,12 @@ jobs:
           username: ${{ secrets.ORACLE_USER }}
           key: ${{ secrets.ORACLE_SSH_KEY }}
           script: |
-            # 기존 컨테이너 중지 및 삭제
+            # 기존 앱 컨테이너 정리
             docker stop seatnow-app || true
             docker rm seatnow-app || true
             docker rmi ${{ secrets.DOCKER_USERNAME }}/seatnow-app:latest || true
             
-            # 최신 이미지 풀 및 컨테이너 실행
-            # (Dockerfile에 prod,secret 프로필이 설정되어 있으므로 환경변수 주입 최소화)
+            # 최신 이미지 실행 및 개별 환경 변수 주입
             docker pull ${{ secrets.DOCKER_USERNAME }}/seatnow-app:latest
             docker run -d -p 8080:8080 --name seatnow-app \
               -e PROD_DB_URL=${{ secrets.PROD_DB_URL }} \

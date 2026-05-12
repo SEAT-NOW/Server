@@ -55,7 +55,7 @@ jobs:
             
             # 최신 이미지 실행 및 개별 환경 변수 주입
             docker pull ${{ secrets.DOCKER_USERNAME }}/seatnow-app:latest
-            docker run -d -p 8080:8080 --name seatnow-app \
+            docker run -d -p 80:8080 --name seatnow-app \
               -e PROD_DB_URL=${{ secrets.PROD_DB_URL }} \
               -e PROD_DB_USERNAME=${{ secrets.PROD_DB_USERNAME }} \
               -e PROD_DB_PASSWORD=${{ secrets.PROD_DB_PASSWORD }} \

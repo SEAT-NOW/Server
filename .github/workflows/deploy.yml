@@ -16,7 +16,7 @@ jobs:
         uses: actions/setup-java@v3
         with:
           java-version: '21'
-          distribution: 'corretto'
+          distribution: 'temurin'
 
       - name: Make application-secret.yml
         env:
@@ -57,7 +57,6 @@ jobs:
           key: ${{ secrets.OCI_SSH_KEY }}
           script: |
             sudo docker pull ${{ secrets.DOCKER_USERNAME }}/seatnow-app:latest
-            # 🚨 수정됨: 하이픈(-)을 제거한 최신 docker compose 명령어를 사용해야 합니다.
             sudo docker compose down
             sudo docker compose up -d
             sudo docker image prune -f

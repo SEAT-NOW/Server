@@ -18,7 +18,7 @@ import java.util.UUID;
 public class S3UploadService {
     private final S3Client s3Client;
 
-    @Value("${spring.cloud.aws.s3.bucket}")
+    @Value("${cloud.aws.s3.bucket}")
     private String bucket;
 
     // 1. 최초 업로드: 무조건 temp/ 폴더로 들어간다.

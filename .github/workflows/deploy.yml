@@ -21,7 +21,9 @@ jobs:
       - name: application-secret.yml 동적 생성
         run: |
           mkdir -p src/main/resources
-          echo "${{ secrets.APPLICATION_SECRET }}" > src/main/resources/application-secret.yml
+          cat << 'EOF' > src/main/resources/application-secret.yml
+          ${{ secrets.APPLICATION_SECRET }}
+          EOF
 
       - name: Gradle 권한 부여 및 빌드
         run: |

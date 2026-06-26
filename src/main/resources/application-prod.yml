@@ -24,4 +24,4 @@ spring:
 
 kakao:
   auth:
-    redirect: "http://168.107.16.135:8080/auth/login/kakao"
+    redirect: "https://168.107.16.135:8080/auth/login/kakao"

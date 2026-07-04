@@ -13,4 +13,5 @@ ARG JAR_FILE=build/libs/*.jar
 COPY ${JAR_FILE} app.jar
 
 # 5. 컨테이너가 시작될 때 실행할 명령어 설정
-ENTRYPOINT ["java", "-jar", "/app.jar"]
+ENTRYPOINT ["java", "-Dspring.profiles.active=prod,secret", "-jar", "/app.jar"]
+

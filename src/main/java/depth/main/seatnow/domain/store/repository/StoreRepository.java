@@ -5,6 +5,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.DayOfWeek;
+import java.time.LocalTime;
 import java.util.List;
 
 import java.util.Optional;
@@ -35,4 +37,7 @@ public interface StoreRepository extends JpaRepository<Store, Long> {
     List<Store> findByUniversityName(@Param("universityName") String universityName);
 
     Optional<Store> findByUserId(Long userId);
+
+    @Query("SELECT s FROM Store s JOIN s.openingHours o WHERE o.dayOfWeek = :businessDay AND o.endTime = :currentTime")
+    List<Store> findStoresByClosingTime(@Param("businessDay") DayOfWeek businessDay, @Param("currentTime") LocalTime currentTime);
 }

@@ -210,6 +210,20 @@ public class Store extends BaseTimeEntity {
         this.operationStatus = status;
     }
 
+    /**
+     * 전체 좌석 초기화
+     * 1. 모든 테이블 사용량 0으로 초기화
+     * 2. 이용 좌석 0개 및 "여유"로 태그 변경
+     */
+    public void resetAllSeats() {
+        this.spaces.forEach(space ->
+                space.getTableConfigs().forEach(table -> table.updateUsedCount(0))
+        );
+        this.usedSeatCount = 0;
+        this.statusTag = SeatStatus.FREE;
+        this.seatModifiedAt = LocalDateTime.now();
+    }
+
     public void updateSeatModifiedAt(){
         this.seatModifiedAt = LocalDateTime.now();
     }

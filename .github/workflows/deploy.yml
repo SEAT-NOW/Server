@@ -25,6 +25,11 @@ jobs:
           ${{ secrets.APPLICATION_SECRET }}
           EOF
 
+      - name: Google Service Account JSON 동적 생성
+        run: |
+          mkdir -p src/main/resources/google
+          echo "${{ secrets.GCP_SERVICE_ACCOUNT_JSON }}" > src/main/resources/google/seatnow-service-account.json
+
       - name: Gradle 권한 부여 및 빌드
         run: |
           chmod +x gradlew

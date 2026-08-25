@@ -1,6 +1,7 @@
 package depth.main.seatnow.domain.store.dto.request.update;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -18,6 +19,7 @@ public class SpaceUpdateRequest {
     private String name;
 
     @Schema(description = "해당 구역의 테이블 설정")
+    @Valid
     private List<TableUpdateDto> tables;
 
     @Getter @NoArgsConstructor

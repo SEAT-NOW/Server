@@ -92,6 +92,11 @@ public class StoreLayoutService {
                         .orElseThrow(() -> new NotFoundException(ErrorCode.TABLE_NOT_FOUND));
 
                 table.updateConfig(tableDto.getTableType(), tableDto.getTableCount());
+
+                if (table.getUsedCount() > tableDto.getTableCount()) {
+                    table.updateUsedCount(tableDto.getTableCount());
+                }
+
             } else {
                 // 신규 테이블 설정 생성
                 TableConfig newTable = TableConfig.create(
@@ -102,6 +107,5 @@ public class StoreLayoutService {
                 existingTables.add(newTable);
             }
         }
-
     }
 }

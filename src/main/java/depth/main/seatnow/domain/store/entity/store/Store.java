@@ -111,6 +111,11 @@ public class Store extends BaseTimeEntity {
 
     // 점유율 계산 및 태그 업데이트
     public void updateStatusTag() {
+        if (this.totalSeatCount == null || this.totalSeatCount == 0) {
+            this.statusTag = SeatStatus.FREE;
+            return;
+        }
+
         double rate = (double) this.usedSeatCount / this.totalSeatCount * 100;
 
         if (rate >= 100) this.statusTag = SeatStatus.FULL;

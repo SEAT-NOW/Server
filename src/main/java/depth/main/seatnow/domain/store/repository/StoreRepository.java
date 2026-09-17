@@ -40,4 +40,8 @@ public interface StoreRepository extends JpaRepository<Store, Long> {
 
     @Query("SELECT s FROM Store s JOIN s.openingHours o WHERE o.dayOfWeek = :businessDay AND o.endTime = :currentTime")
     List<Store> findStoresByClosingTime(@Param("businessDay") DayOfWeek businessDay, @Param("currentTime") LocalTime currentTime);
+
+    // 사용 중인 좌석이 1개 이상인 매장 조회
+    @Query("SELECT s FROM Store s WHERE s.usedSeatCount > 0")
+    List<Store> findStoresWithUsedSeats();
 }

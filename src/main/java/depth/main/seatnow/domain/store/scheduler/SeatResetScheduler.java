@@ -2,16 +2,13 @@ package depth.main.seatnow.domain.store.scheduler;
 
 import depth.main.seatnow.domain.store.entity.store.Store;
 import depth.main.seatnow.domain.store.repository.StoreRepository;
+import depth.main.seatnow.domain.store.service.SeatService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.time.DayOfWeek;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 @Slf4j
@@ -20,34 +17,25 @@ import java.util.List;
 public class SeatResetScheduler {
 
     private final StoreRepository storeRepository;
+    private final SeatService seatService;
 
     /**
-     * 1분마다 실행됨, 현재 시각을 기준으로 영업 종료시간에 도달한 매장 좌석 초기화
+     * 1분마다 실행되며, 현재 시각 기준 영업이 종료되었으나 좌석이 남아있는 매장의 좌석을 초기화함
      */
     @Scheduled(cron = "0 * * * * *")
-    @Transactional
     public void resetSeatCountAtClosingTime() {
         LocalDateTime now = LocalDateTime.now();
-        LocalTime currentTime = now.toLocalTime().truncatedTo(ChronoUnit.MINUTES);
-        DayOfWeek businessDay = calculateBusinessDay(now);
+        List<Store> storesWithSeats = storeRepository.findStoresWithUsedSeats();
 
-        List<Store> closingStores = storeRepository.findStoresByClosingTime(businessDay, currentTime);
-
-        for (Store store : closingStores) {
+        for (Store store : storesWithSeats) {
             try {
-                store.resetAllSeats();
-                log.info("매장 ID: {} 좌석 초기화 완료", store.getId());
+                boolean reset = seatService.resetStoreSeatsIfClosed(store.getId(), now);
+                if (reset) {
+                    log.info("영업 마감 매장 ID: {} 좌석 초기화 완료", store.getId());
+                }
             } catch (Exception e) {
                 log.error("매장 ID: {} 좌석 초기화 중 오류 발생 - {}", store.getId(), e.getMessage(), e);
             }
         }
-    }
-
-    private DayOfWeek calculateBusinessDay(LocalDateTime currentDateTime) {
-        LocalTime time = currentDateTime.toLocalTime();
-        if (time.isBefore(LocalTime.of(6, 0))) {
-            return currentDateTime.minusDays(1).getDayOfWeek();
-        }
-        return currentDateTime.getDayOfWeek();
     }
 }

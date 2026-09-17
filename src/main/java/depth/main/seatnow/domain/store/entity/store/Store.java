@@ -215,10 +215,16 @@ public class Store extends BaseTimeEntity {
         this.operationStatus = status;
     }
 
+    public boolean isClosed(LocalDateTime now) {
+        updateOperationStatus(now);
+        return this.operationStatus == OperationStatus.CLOSED;
+    }
+
     /**
      * 전체 좌석 초기화
      * 1. 모든 테이블 사용량 0으로 초기화
      * 2. 이용 좌석 0개 및 "여유"로 태그 변경
+     * 3. 영업 상태 CLOSED로 동기화
      */
     public void resetAllSeats() {
         this.spaces.forEach(space ->
@@ -226,6 +232,7 @@ public class Store extends BaseTimeEntity {
         );
         this.usedSeatCount = 0;
         this.statusTag = SeatStatus.FREE;
+        this.operationStatus = OperationStatus.CLOSED;
         this.seatModifiedAt = LocalDateTime.now();
     }
 

@@ -17,6 +17,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -85,6 +87,23 @@ public class SeatService {
         }
 
         return SeatResponse.from(store);
+    }
+
+    /**
+     * 특정 매장이 현재 영업 종료 상태이고 사용 중인 좌석이 있다면 좌석을 초기화
+     */
+    @Transactional
+    public boolean resetStoreSeatsIfClosed(Long storeId, LocalDateTime now) {
+        Store store = storeRepository.findById(storeId).orElse(null);
+        if (store == null) {
+            return false;
+        }
+
+        if (store.isClosed(now) && store.getUsedSeatCount() > 0) {
+            store.resetAllSeats();
+            return true;
+        }
+        return false;
     }
 
 }

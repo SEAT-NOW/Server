@@ -17,7 +17,7 @@ public interface StoreRepository extends JpaRepository<Store, Long> {
     // 내 주변 반경 N km 검색
     @Query(value = "SELECT * FROM store " +
             "WHERE (6371 * acos(cos(radians(:lat)) * cos(radians(latitude)) * cos(radians(longitude) - radians(:lng)) + sin(radians(:lat)) * sin(radians(latitude)))) <= :radius " +
-            "ORDER BY seat_modified_at DESC", nativeQuery = true)
+            "ORDER BY seat_modified_at DESC NULLS LAST", nativeQuery = true)
     List<Store> searchByLocation(@Param("lat") double lat, @Param("lng") double lng, @Param("radius") double radius);
 
     // 키워드 검색
@@ -25,7 +25,7 @@ public interface StoreRepository extends JpaRepository<Store, Long> {
             "WHERE s.storeName LIKE CONCAT('%', :keyword, '%') " +
             "OR s.address LIKE CONCAT('%', :keyword, '%') " +
             "OR s.neighborhood LIKE CONCAT('%', :keyword, '%') " +
-            "ORDER BY s.modifiedAt DESC")
+            "ORDER BY s.seatModifiedAt DESC NULLS LAST")
     List<Store> searchByKeyword(@Param("keyword") String keyword);
 
     // 특정 대학교 이름을 가진 술집들 검색
@@ -33,7 +33,7 @@ public interface StoreRepository extends JpaRepository<Store, Long> {
             "JOIN s.storeUniversities su " +
             "JOIN su.universityMaster um " +
             "WHERE um.name = :universityName " +
-            "ORDER BY s.seatModifiedAt DESC")
+            "ORDER BY s.seatModifiedAt DESC NULLS LAST")
     List<Store> findByUniversityName(@Param("universityName") String universityName);
 
     Optional<Store> findByUserId(Long userId);

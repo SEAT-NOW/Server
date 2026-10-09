@@ -6,6 +6,7 @@ import depth.main.seatnow.domain.store.dto.response.StoreDetailResponse;
 import depth.main.seatnow.domain.store.dto.response.StoreSearchResponse;
 import depth.main.seatnow.domain.store.entity.menu.Menu;
 import depth.main.seatnow.domain.store.entity.menu.MenuCategory;
+import depth.main.seatnow.domain.store.entity.operation.OperationStatus;
 import depth.main.seatnow.domain.store.entity.store.Store;
 import depth.main.seatnow.domain.store.repository.MenuLikeRepository;
 import depth.main.seatnow.domain.store.repository.StoreKeepRepository;
@@ -75,14 +76,23 @@ public class StoreLookUpService {
             stores = filteredStores;
         }
 
-        List<StoreListResponse> responseList = new ArrayList<>();
         LocalDateTime now = LocalDateTime.now();
-
         for (Store store : stores) {
-            String distanceStr = null;
             store.updateOperationStatus(now);
+        }
 
-            if (lat != null && lng != null) {
+        List<Store> sortedStores = new ArrayList<>(stores);
+        sortedStores.sort(Comparator
+                .comparing((Store s) -> s.getOperationStatus() == OperationStatus.CLOSED)
+                .thenComparing(Store::getSeatModifiedAt, Comparator.nullsLast(Comparator.reverseOrder()))
+                .thenComparing(Store::getId, Comparator.nullsLast(Comparator.naturalOrder()))
+        );
+
+        List<StoreListResponse> responseList = new ArrayList<>();
+        for (Store store : sortedStores) {
+            String distanceStr = null;
+
+            if (lat != null && lng != null && store.getLatitude() != null && store.getLongitude() != null) {
                 double distanceMeters = calculateDistance(lat, lng, store.getLatitude(), store.getLongitude());
                 distanceStr = formatDistance(distanceMeters);
             }
